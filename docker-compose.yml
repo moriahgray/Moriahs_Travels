@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  backend:
+    build:
+      context: ./travels_backend
+    ports:
+      - "8080:8080"
+    networks:
+      - travels-network
+
+  frontend:
+    build:
+      context: ./travels_frontend
+    ports:
+      - "19000:19000"
+    networks:
+      - travels-network
+
+networks:
+  travels-network:
+    driver: bridge
