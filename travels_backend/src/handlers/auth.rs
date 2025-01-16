@@ -1,4 +1,4 @@
-use actix_web::{web, HttpResponse, Responder};
+use actix_web::{web, HttpResponse};
 use diesel::prelude::*;
 use serde::Deserialize;
 use crate::models::{User, NewUser};
@@ -7,7 +7,6 @@ use crate::utils::db::DbPool;
 use crate::utils::jwt::generate_jwt;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use argon2::password_hash::SaltString;
-use rand::Rng;
 
 #[derive(Deserialize)]
 pub struct SignupRequest {
