@@ -3,7 +3,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import AuthNavigator from "./navigation/authNavigator";
 import MainNavigator from "./navigation/mainNavigator";
-import { getToken } from "./utils/storage";
+import { getToken, removeToken } from "./utils/storage";
 import jwtDecode from "jsonwebtoken";
 
 const Stack = createStackNavigator();
@@ -13,15 +13,30 @@ export default function App() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = await getToken();
-      if (token) {
-        const decoded = jwtDecode(token);
-        const currentTime = Date.now() / 1000;
-        if (decoded.exp > currentTime) {
-          setIsAuthenticated(true);
+      try {
+        const token = await getToken();
+        if (token) {
+          const decoded = jwtDecode(token);
+          const currentTime = Date.now() / 1000;
+
+          if (decoded.exp > currentTime) {
+            setIsAuthenticated(true);
+
+            // Automatically log out when the token expires
+            const timeUntilExpiry = (decoded.exp - currentTime) * 1000;
+            setTimeout(() => {
+              setIsAuthenticated(false);
+              removeToken();
+            }, timeUntilExpiry);
+          } else {
+            await removeToken();
+          }
         }
+      } catch (error) {
+        console.error("Error decoding token:", error);
       }
     };
+
     checkAuth();
   }, []);
 
