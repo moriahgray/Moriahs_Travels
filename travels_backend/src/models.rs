@@ -47,7 +47,7 @@ pub struct Place {
 #[derive(Insertable, Serialize, Deserialize, Debug)]
 #[diesel(table_name = places)]
 pub struct NewPlace {
-    pub user_id: String,              // Foreign key to `users`
+    pub user_id: String, 
     pub title: String,
     pub description: Option<String>,
     pub latitude: BigDecimal,
