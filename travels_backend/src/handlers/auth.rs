@@ -27,18 +27,20 @@ pub struct LoginRequest {
 pub async fn signup(
     pool: web::Data<DbPool>,
     user_data: web::Json<SignupRequest>,
-) -> impl Responder {
+) -> Result<HttpResponse, actix_web::Error> {
     let mut conn = pool.get()
-        .map_err(|_| HttpResponse::InternalServerError().json(serde_json::json!({ "error": "Database connection error" })))?;
+        .map_err(|_| {
+            actix_web::error::ErrorInternalServerError("Database connection error")
+        })?;
 
     // Hash the password
-    let salt = SaltString::generate(&mut thread_rng());
-    let hashed_password = match Argon2::default().hash_password(user_data.password.as_bytes(), &salt) {
-        Ok(hash) => hash.to_string(),
-        Err(_) => {
-            return HttpResponse::InternalServerError().json(serde_json::json!({ "error": "Password hashing failed" }));
-        }
-    };
+    let salt = SaltString::generate(&mut rand::thread_rng());
+    let hashed_password = Argon2::default()
+        .hash_password(user_data.password.as_bytes(), &salt)
+        .map_err(|_| {
+            actix_web::error::ErrorInternalServerError("Password hashing failed")
+        })?
+        .to_string();
 
     // Create a new user
     let new_user = NewUser {
@@ -50,69 +52,76 @@ pub async fn signup(
     };
 
     // Insert user into the database
-    if let Err(err) = diesel::insert_into(users)
+    diesel::insert_into(users)
         .values(&new_user)
         .execute(&mut conn)
-    {
-        return HttpResponse::InternalServerError().json(serde_json::json!({
-            "error": format!("Failed to create user: {}", err)
-        }));
-    }
+        .map_err(|err| {
+            actix_web::error::ErrorInternalServerError(format!("Failed to create user: {}", err))
+        })?;
 
     // Generate JWT token
-    let token = match generate_jwt(&new_user.user_id) {
-        Ok(token) => token,
-        Err(_) => {
-            return HttpResponse::InternalServerError().json(serde_json::json!({ "error": "JWT generation failed" }));
-        }
-    };
+    let token = generate_jwt(&new_user.user_id).map_err(|_| {
+        actix_web::error::ErrorInternalServerError("JWT generation failed")
+    })?;
 
-    HttpResponse::Created().json(serde_json::json!({
+    Ok(HttpResponse::Created().json(serde_json::json!({
         "message": "User created successfully",
         "token": token
-    }))
+    })))
 }
 
 pub async fn login(
     pool: web::Data<DbPool>,
     credentials: web::Json<LoginRequest>,
-) -> impl Responder {
+) -> Result<HttpResponse, actix_web::Error> {
     let mut conn = pool.get()
-        .map_err(|_| HttpResponse::InternalServerError().json(serde_json::json!({ "error": "Database connection error" })))?;
+        .map_err(|_| {
+            actix_web::error::ErrorInternalServerError("Database connection error")
+        })?;
 
     // Retrieve user from the database
-    let user = match users.filter(email.eq(&credentials.email))
-        .first::<User>(&mut conn)
-        .optional()
-    {
-        Ok(Some(user)) => user,
-        Ok(None) => {
-            return HttpResponse::Unauthorized().json(serde_json::json!({ "error": "Invalid email or password" }));
-        }
-        Err(_) => {
-            return HttpResponse::InternalServerError().json(serde_json::json!({ "error": "Failed to query user" }));
+    let user_result = users
+        .filter(email.eq(&credentials.email))
+        .load::<User>(&mut conn) // Use `load` to retrieve the matching rows
+        .map_err(|_| {
+            actix_web::error::ErrorInternalServerError("Failed to query user")
+        })?;
+
+    // Ensure at least one matching user exists
+    let user = match user_result.into_iter().next() {
+        Some(user) => user,
+        None => {
+            return Ok(HttpResponse::Unauthorized().json(serde_json::json!({
+                "error": "Invalid email or password"
+            })));
         }
     };
 
     // Verify the password
     let is_valid = Argon2::default()
-        .verify_password(credentials.password.as_bytes(), &PasswordHash::new(&user.password).unwrap())
-        .unwrap_or(false);
+        .verify_password(
+            credentials.password.as_bytes(),
+            &PasswordHash::new(&user.password).unwrap(),
+        )
+        .is_ok();
 
     if !is_valid {
-        return HttpResponse::Unauthorized().json(serde_json::json!({ "error": "Invalid email or password" }));
+        return Ok(HttpResponse::Unauthorized().json(serde_json::json!({
+            "error": "Invalid email or password"
+        })));
     }
 
     // Generate JWT token
-    let token = match generate_jwt(&user.user_id) {
-        Ok(token) => token,
-        Err(_) => {
-            return HttpResponse::InternalServerError().json(serde_json::json!({ "error": "JWT generation failed" }));
-        }
-    };
+    let token = generate_jwt(&user.user_id).map_err(|_| {
+        actix_web::error::ErrorInternalServerError("JWT generation failed")
+    })?;
 
-    HttpResponse::Ok().json(serde_json::json!({
+    Ok(HttpResponse::Ok().json(serde_json::json!({
         "message": "Login successful",
         "token": token
-    }))
+    })))
+}
+pub fn init_routes(cfg: &mut web::ServiceConfig) {
+    cfg.service(web::resource("/signup").route(web::post().to(signup)))
+        .service(web::resource("/login").route(web::post().to(login)));
 }

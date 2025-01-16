@@ -1,5 +1,7 @@
 use dotenvy::dotenv;
 use actix_web::{web, App, HttpServer};
+use utils::db::init_pool;
+use diesel::RunQueryDsl;
 
 mod handlers {
     pub mod auth;
@@ -14,9 +16,8 @@ mod utils {
     pub mod jwt;
 }
 
-use handlers::auth::{signup, login};
-use handlers::places::{add_place, get_places};
-use utils::db::init_pool;
+use handlers::auth::init_routes as auth_routes;
+use handlers::places::init_routes as places_routes;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -25,13 +26,15 @@ async fn main() -> std::io::Result<()> {
     let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let pool = init_pool(&database_url);
 
+    // Test the database connection
+    let mut conn = pool.get().expect("Failed to get database connection");
+    diesel::sql_query("SELECT 1").execute(&mut conn).expect("Database connection test failed");    
+
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(pool.clone()))
-            .route("/signup", web::post().to(signup))
-            .route("/login", web::post().to(login))
-            .route("/places", web::post().to(add_place))
-            .route("/places", web::get().to(get_places))
+            .configure(auth_routes)
+            .configure(places_routes)
     })
     .bind("127.0.0.1:8000")?
     .run()
