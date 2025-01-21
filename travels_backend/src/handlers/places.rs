@@ -1,4 +1,4 @@
-use actix_web::{web, HttpResponse, Responder, Error};
+use actix_web::{web, HttpResponse};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use crate::models::{Place, NewPlace};
@@ -17,10 +17,12 @@ pub struct NewPlaceRequest {
     pub category: Option<String>,
     pub hotels: Option<String>,
     pub restaurants: Option<String>,
-    pub image_uri: Option<String>,
+    #[serde(rename = "imageUri")]
+    pub image_uri: Option<String>,  // Correct field name for JSON input
     pub address: Option<String>,
 }
 
+// Response struct for returning place data
 #[derive(Serialize)]
 pub struct PlaceResponse {
     pub id: i32,
@@ -38,6 +40,7 @@ pub struct PlaceResponse {
     pub created_at: Option<String>,
 }
 
+// Add a new place to the database
 pub async fn add_place(
     pool: web::Data<DbPool>,
     place_data: web::Json<NewPlaceRequest>,
@@ -56,7 +59,7 @@ pub async fn add_place(
         category: place_data.category.clone(),
         hotels: place_data.hotels.clone(),
         restaurants: place_data.restaurants.clone(),
-        imageUri: place_data.image_uri.clone(),
+        image_uri: place_data.image_uri.clone(),
         address: place_data.address.clone(),
     };
 
@@ -72,13 +75,14 @@ pub async fn add_place(
     })))
 }
 
+// Fetch places from the database
 pub async fn get_places(pool: web::Data<DbPool>) -> Result<HttpResponse, actix_web::Error> {
-    let conn = pool.get().map_err(|e| {
+    let mut conn = pool.get().map_err(|e| {
         actix_web::error::ErrorInternalServerError(format!("Database connection error: {}", e))
     })?;
 
     let results = places
-        .load::<Place>(&mut conn)
+        .load::<Place>(&mut conn)  // Now using mutable reference
         .map_err(|_| actix_web::error::ErrorInternalServerError("Failed to fetch places"))?;
 
     let places_response: Vec<PlaceResponse> = results
@@ -96,13 +100,14 @@ pub async fn get_places(pool: web::Data<DbPool>) -> Result<HttpResponse, actix_w
             restaurants: place.restaurants,
             image_uri: place.image_uri,
             address: place.address,
-            created_at: place.created_at.map(|datetime| datetime.to_string()),
+            created_at: place.created_at.map(|dt| dt.to_string()),
         })
         .collect();
 
     Ok(HttpResponse::Ok().json(places_response))
 }
 
+// Register routes
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::resource("/places")
