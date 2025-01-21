@@ -15,6 +15,8 @@ export default function App() {
     const checkAuth = async () => {
       try {
         const token = await getToken();
+        console.log("Retrieved token:", token);
+
         if (token) {
           const decoded = jwtDecode(token);
           const currentTime = Date.now() / 1000;
@@ -24,13 +26,17 @@ export default function App() {
 
             // Automatically log out when the token expires
             const timeUntilExpiry = (decoded.exp - currentTime) * 1000;
-            setTimeout(() => {
+            setTimeout(async () => {
               setIsAuthenticated(false);
-              removeToken();
+              await removeToken();
+              console.log("Token expired and removed from storage.");
             }, timeUntilExpiry);
           } else {
+            console.log("Token expired, removing...");
             await removeToken();
           }
+        } else {
+          console.log("No token found, user not authenticated.");
         }
       } catch (error) {
         console.error("Error decoding token:", error);

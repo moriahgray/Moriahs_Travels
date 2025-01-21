@@ -2,10 +2,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
  * Save a key-value pair to storage.
- * @param {string} key - The key under which to store the value.
- * @param {any} value - The value to be stored.
+ * @param {string} key 
+ * @param {any} value
  */
 export const saveToStorage = async (key, value) => {
+  if (!key || typeof key !== 'string') {
+    console.error('saveToStorage called with an undefined or invalid key');
+    return;
+  }
   try {
     const jsonValue = JSON.stringify(value);
     await AsyncStorage.setItem(key, jsonValue);
@@ -18,11 +22,16 @@ export const saveToStorage = async (key, value) => {
 
 /**
  * Retrieve a value from storage by its key.
- * @param {string} key - The key of the value to retrieve.
- * @returns {any|null} The retrieved value, or null if not found.
+ * @param {string} key 
+ * @returns {any|null}
  */
 export const getFromStorage = async (key) => {
+  if (!key || typeof key !== 'string') {
+    console.error('getFromStorage called with an undefined or invalid key');
+    return null;
+  }
   try {
+    console.log(`Fetching key from storage: ${key}`);
     const jsonValue = await AsyncStorage.getItem(key);
     return jsonValue != null ? JSON.parse(jsonValue) : null;
   } catch (error) {
@@ -36,6 +45,10 @@ export const getFromStorage = async (key) => {
  * @param {string} key - The key of the value to remove.
  */
 export const removeFromStorage = async (key) => {
+  if (!key || typeof key !== 'string') {
+    console.error('removeFromStorage called with an undefined or invalid key');
+    return;
+  }
   try {
     await AsyncStorage.removeItem(key);
     console.log(`Removed ${key} from storage`);
@@ -57,3 +70,9 @@ export const clearStorage = async () => {
     throw error;
   }
 };
+
+/**
+ * Wrapper functions for better usage in app.
+ */
+export const getToken = async () => await getFromStorage('userToken');
+export const removeToken = async () => await removeFromStorage('userToken');
