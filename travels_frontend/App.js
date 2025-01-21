@@ -4,7 +4,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import AuthNavigator from "./src/navigation/authNavigator";
 import MainNavigator from "./src/navigation/mainNavigator";
 import { getToken, removeToken } from "./src/utils/storage";
-import jwtDecode from "jsonwebtoken";
+import jwtDecode from "jwt-decode";
 
 const Stack = createStackNavigator();
 
