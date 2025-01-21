@@ -1,5 +1,5 @@
 # Use the latest stable Rust version
-FROM rust:1.84.0 as builder
+FROM rust:1.84.0 AS builder
 
 # Set the working directory inside the container
 WORKDIR /usr/src/travels_backend
