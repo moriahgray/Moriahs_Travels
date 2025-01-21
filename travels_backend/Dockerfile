@@ -1,10 +1,16 @@
-# Use the official Rust image to build the project
-FROM rust:1.56 as builder
+# Use the latest stable Rust version
+FROM rust:1.84.0 as builder
 
 # Set the working directory inside the container
 WORKDIR /usr/src/travels_backend
 
-# Copy the source code into the container
+# Copy only Cargo files first to leverage Docker's caching for dependencies
+COPY Cargo.toml Cargo.lock ./
+
+# Pre-fetch dependencies separately to optimize caching
+RUN cargo fetch --locked  
+
+# Copy the entire project directory
 COPY . .
 
 # Build the Rust project in release mode
@@ -20,4 +26,4 @@ COPY --from=builder /usr/src/travels_backend/target/release/travels_backend /usr
 EXPOSE 8080
 
 # Command to run the backend
-CMD ["travels_backend"]
+CMD ["/usr/local/bin/travels_backend"]

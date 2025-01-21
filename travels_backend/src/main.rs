@@ -1,8 +1,8 @@
-use dotenvy::dotenv;
 use actix_web::{web, App, HttpServer};
-use utils::db::init_pool;
 use diesel::RunQueryDsl;
+use dotenvy::dotenv;
 use std::env;
+use utils::db::init_pool;
 
 mod handlers {
     pub mod auth;
