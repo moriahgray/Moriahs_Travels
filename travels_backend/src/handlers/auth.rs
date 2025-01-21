@@ -27,21 +27,16 @@ pub async fn signup(
     pool: web::Data<DbPool>,
     user_data: web::Json<SignupRequest>,
 ) -> Result<HttpResponse, actix_web::Error> {
-    let mut conn = pool.get()
-        .map_err(|_| {
-            actix_web::error::ErrorInternalServerError("Database connection error")
-        })?;
+    let mut conn = pool.get().map_err(|e| {
+        actix_web::error::ErrorInternalServerError(format!("Database connection error: {}", e))
+    })?;
 
-    // Hash the password
     let salt = SaltString::generate(&mut rand::thread_rng());
     let hashed_password = Argon2::default()
         .hash_password(user_data.password.as_bytes(), &salt)
-        .map_err(|_| {
-            actix_web::error::ErrorInternalServerError("Password hashing failed")
-        })?
+        .map_err(|_| actix_web::error::ErrorInternalServerError("Password hashing failed"))?
         .to_string();
 
-    // Create a new user
     let new_user = NewUser {
         user_id: user_data.user_id.clone(),
         first_name: user_data.first_name.clone(),
@@ -50,7 +45,6 @@ pub async fn signup(
         password: hashed_password,
     };
 
-    // Insert user into the database
     diesel::insert_into(users)
         .values(&new_user)
         .execute(&mut conn)
@@ -58,7 +52,6 @@ pub async fn signup(
             actix_web::error::ErrorInternalServerError(format!("Failed to create user: {}", err))
         })?;
 
-    // Generate JWT token
     let token = generate_jwt(&new_user.user_id).map_err(|_| {
         actix_web::error::ErrorInternalServerError("JWT generation failed")
     })?;
@@ -73,20 +66,15 @@ pub async fn login(
     pool: web::Data<DbPool>,
     credentials: web::Json<LoginRequest>,
 ) -> Result<HttpResponse, actix_web::Error> {
-    let mut conn = pool.get()
-        .map_err(|_| {
-            actix_web::error::ErrorInternalServerError("Database connection error")
-        })?;
+    let mut conn = pool.get().map_err(|_| {
+        actix_web::error::ErrorInternalServerError("Database connection error")
+    })?;
 
-    // Retrieve user from the database
     let user_result = users
         .filter(email.eq(&credentials.email))
-        .load::<User>(&mut conn) // Use `load` to retrieve the matching rows
-        .map_err(|_| {
-            actix_web::error::ErrorInternalServerError("Failed to query user")
-        })?;
+        .load::<User>(&mut conn)
+        .map_err(|_| actix_web::error::ErrorInternalServerError("Failed to query user"))?;
 
-    // Ensure at least one matching user exists
     let user = match user_result.into_iter().next() {
         Some(user) => user,
         None => {
@@ -96,12 +84,10 @@ pub async fn login(
         }
     };
 
-    // Verify the password
+    let parsed_hash = PasswordHash::new(&user.password)
+        .map_err(|_| actix_web::error::ErrorInternalServerError("Invalid stored password hash"))?;
     let is_valid = Argon2::default()
-        .verify_password(
-            credentials.password.as_bytes(),
-            &PasswordHash::new(&user.password).unwrap(),
-        )
+        .verify_password(credentials.password.as_bytes(), &parsed_hash)
         .is_ok();
 
     if !is_valid {
@@ -110,7 +96,6 @@ pub async fn login(
         })));
     }
 
-    // Generate JWT token
     let token = generate_jwt(&user.user_id).map_err(|_| {
         actix_web::error::ErrorInternalServerError("JWT generation failed")
     })?;
@@ -120,6 +105,7 @@ pub async fn login(
         "token": token
     })))
 }
+
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(web::resource("/signup").route(web::post().to(signup)))
         .service(web::resource("/login").route(web::post().to(login)));

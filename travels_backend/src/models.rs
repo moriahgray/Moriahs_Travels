@@ -38,9 +38,10 @@ pub struct Place {
     pub category: Option<String>,
     pub hotels: Option<String>,
     pub restaurants: Option<String>,
-    pub imageUri: Option<String>,
+    #[diesel(column_name = "imageUri")]
+    pub image_uri: Option<String>,
     pub address: Option<String>,
-    pub created_at: Option<chrono::NaiveDateTime>,
+    pub created_at: Option<NaiveDateTime>,
 }
 
 #[derive(Insertable, Serialize, Deserialize, Debug)]
@@ -56,6 +57,6 @@ pub struct NewPlace {
     pub hotels: Option<String>,
     pub restaurants: Option<String>,
     #[diesel(column_name = "imageUri")]
-    pub imageUri: Option<String>,
+    pub image_uri: Option<String>,
     pub address: Option<String>,
 }
