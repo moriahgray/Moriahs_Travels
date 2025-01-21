@@ -4,10 +4,10 @@ use chrono::NaiveDateTime;
 use bigdecimal::BigDecimal;
 use crate::schema::{users, places};
 
-#[derive(Queryable, Selectable, Serialize, Deserialize, Debug)] // Added Selectable
+#[derive(Queryable, Selectable, Serialize, Deserialize, Debug)]
 #[diesel(table_name = users)]
 pub struct User {
-    pub user_id: String,              // Primary key
+    pub user_id: String,
     pub first_name: String,
     pub last_name: String,
     pub email: String,
@@ -18,36 +18,35 @@ pub struct User {
 #[derive(Insertable, Serialize, Deserialize, Debug)]
 #[diesel(table_name = users)]
 pub struct NewUser {
-    pub user_id: String,              // Primary key
+    pub user_id: String,
     pub first_name: String,
     pub last_name: String,
     pub email: String,
     pub password: String,
 }
 
-#[derive(Queryable, Selectable, Serialize, Deserialize, Debug)] // Added Selectable
+#[derive(Queryable, Selectable, Serialize, Deserialize, Debug)]
 #[diesel(table_name = places)]
 pub struct Place {
-    pub id: i32,                      // Primary key
-    pub user_id: String,              // Foreign key to `users`
+    pub id: i32,
+    pub user_id: String,
     pub title: String,
     pub description: Option<String>,
-    pub latitude: BigDecimal,         // Decimal type for precise coordinates
-    pub longitude: BigDecimal,        // Decimal type for precise coordinates
+    pub latitude: BigDecimal,
+    pub longitude: BigDecimal,
     pub plans: Option<String>,
     pub category: Option<String>,
     pub hotels: Option<String>,
     pub restaurants: Option<String>,
-    #[diesel(column_name = "imageUri")]
-    pub image_uri: Option<String>,    // Maps to `imageUri` in the database
+    pub imageUri: Option<String>,
     pub address: Option<String>,
-    pub created_at: Option<NaiveDateTime>,
+    pub created_at: Option<chrono::NaiveDateTime>,
 }
 
 #[derive(Insertable, Serialize, Deserialize, Debug)]
 #[diesel(table_name = places)]
 pub struct NewPlace {
-    pub user_id: String, 
+    pub user_id: String,
     pub title: String,
     pub description: Option<String>,
     pub latitude: BigDecimal,
@@ -57,6 +56,6 @@ pub struct NewPlace {
     pub hotels: Option<String>,
     pub restaurants: Option<String>,
     #[diesel(column_name = "imageUri")]
-    pub image_uri: Option<String>,
+    pub imageUri: Option<String>,
     pub address: Option<String>,
 }
