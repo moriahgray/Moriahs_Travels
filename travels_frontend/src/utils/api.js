@@ -10,7 +10,7 @@ export const API_URL =
   Platform.OS === "android"
     ? `http://${LOCAL_ANDROID}:${LOCAL_PORT}`
     : `http://${LOCAL_IP}:${LOCAL_PORT}`;
-
+    
 /**
  * Helper function to get headers, including Authorization token.
  */
