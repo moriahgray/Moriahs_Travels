@@ -20,7 +20,7 @@ COPY . .
 RUN cargo build --release
 
 # Create a minimal runtime image from Debian
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 # Install MariaDB runtime libraries needed for the Diesel ORM to connect
 RUN apt-get update && apt-get install -y libmariadb3 ca-certificates && rm -rf /var/lib/apt/lists/*
