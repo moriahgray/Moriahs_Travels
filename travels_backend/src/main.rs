@@ -28,6 +28,7 @@ use handlers::places::init_routes as places_routes;
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
 
+    // Check for command-line arguments
     let args: Vec<String> = env::args().collect();
     if args.len() > 1 {
         match args[1].as_str() {
@@ -40,20 +41,22 @@ async fn main() -> std::io::Result<()> {
                 return Ok(());
             }
             _ => {
-                println!("Unknown option. Use --store-password or --delete-password");
+                println!("Unknown option. Use --store-password or --delete-password.");
                 return Ok(());
             }
         }
     }
 
-    // Retrieve the password securely using the keyring
-    let password = keyring::get_password();
+    // Attempt to get the password from environment variable or fallback to keyring
+    let password = if let Ok(password) = env::var("DATABASE_PASSWORD") {
+        password
+    } else {
+        keyring::get_password()
+    };
 
-    // Read the DATABASE_URL from .env and replace placeholder with the actual password
     let database_url_template = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let database_url = database_url_template.replace("PLACEHOLDER", &password);
 
-    // Set the dynamically generated DATABASE_URL
     env::set_var("DATABASE_URL", &database_url);
     println!("DATABASE_URL set dynamically and securely.");
 
