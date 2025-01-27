@@ -5,6 +5,8 @@ services:
     container_name: travels_backend_container
     env_file:
       - .env
+    environment:
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD:-example_password} # Default for Docker runtime
     ports:
       - "8080:8080"
     depends_on:
@@ -22,6 +24,8 @@ services:
       MYSQL_USER: root
     ports:
       - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
     networks:
       - travels-network
 
@@ -37,3 +41,6 @@ services:
 networks:
   travels-network:
     driver: bridge
+
+volumes:
+  db_data:
