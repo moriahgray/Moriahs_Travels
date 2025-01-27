@@ -1,16 +1,34 @@
 services:
   travels_backend:
-    image: moriahs_travels-backend
+    build:
+      context: ./travels_backend
+    container_name: travels_backend_container
     env_file:
       - .env
     ports:
       - "8080:8080"
     depends_on:
       - database
+    networks:
+      - travels-network
+
+  database:
+    image: mariadb:latest
+    container_name: travels_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: example_password
+      MYSQL_DATABASE: moriahsTravels
+      MYSQL_USER: root
+    ports:
+      - "3306:3306"
+    networks:
+      - travels-network
 
   frontend:
     build:
       context: ./travels_frontend
+    container_name: travels_frontend_container
     ports:
       - "19000:19000"
     networks:

@@ -18,7 +18,7 @@ mod schema;
 mod utils {
     pub mod db;
     pub mod jwt;
-    pub mod keyring; // Include keyring module
+    pub mod keyring;
 }
 
 use handlers::auth::init_routes as auth_routes;
@@ -46,14 +46,16 @@ async fn main() -> std::io::Result<()> {
         }
     }
 
+    // Retrieve the password securely using the keyring
     let password = keyring::get_password();
-    let database_url = format!(
-        "mysql://root:{}@host.docker.internal:3306/moriahsTravels",
-        password
-    );
-    
+
+    // Read the DATABASE_URL from .env and replace placeholder with the actual password
+    let database_url_template = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let database_url = database_url_template.replace("PLACEHOLDER", &password);
+
+    // Set the dynamically generated DATABASE_URL
     env::set_var("DATABASE_URL", &database_url);
-    println!("DATABASE_URL set successfully.");
+    println!("DATABASE_URL set dynamically and securely.");
 
     let pool = init_pool(&database_url);
 
