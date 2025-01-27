@@ -47,21 +47,10 @@ async fn main() -> std::io::Result<()> {
         }
     }
 
-    // Attempt to get the password from environment variable or fallback to keyring
-    let password = if let Ok(password) = env::var("DATABASE_PASSWORD") {
-        password
-    } else {
-        keyring::get_password()
-    };
+    // Initialize the database connection pool
+    let pool = init_pool();
 
-    let database_url_template = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let database_url = database_url_template.replace("PLACEHOLDER", &password);
-
-    env::set_var("DATABASE_URL", &database_url);
-    println!("DATABASE_URL set dynamically and securely.");
-
-    let pool = init_pool(&database_url);
-
+    // Test the database connection
     let mut conn = pool.get().expect("Failed to get database connection");
     diesel::sql_query("SELECT 1")
         .execute(&mut conn)
