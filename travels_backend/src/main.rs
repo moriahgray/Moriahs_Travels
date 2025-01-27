@@ -58,6 +58,7 @@ async fn main() -> std::io::Result<()> {
 
     println!("Starting server on http://127.0.0.1:8000");
 
+    // Start the Actix web server
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(pool.clone()))

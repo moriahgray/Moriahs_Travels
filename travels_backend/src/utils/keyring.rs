@@ -20,8 +20,19 @@ pub fn store_password() {
 
 // Function to retrieve the stored database password
 pub fn get_password() -> String {
-    let entry = Entry::new(SERVICE_NAME, USERNAME).expect("Failed to create keyring entry");
-    entry.get_password().expect("Failed to retrieve password")
+    match Entry::new(SERVICE_NAME, USERNAME) {
+        Ok(entry) => match entry.get_password() {
+            Ok(password) => password,
+            Err(e) => {
+                eprintln!("Failed to retrieve password from keyring: {}", e);
+                std::process::exit(1);
+            }
+        },
+        Err(e) => {
+            eprintln!("Failed to create keyring entry: {}", e);
+            std::process::exit(1);
+        }
+    }
 }
 
 // Function to remove the stored password (if needed)
