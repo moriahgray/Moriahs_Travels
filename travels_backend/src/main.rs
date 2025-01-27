@@ -4,6 +4,8 @@ use dotenvy::dotenv;
 use std::env;
 use utils::db::init_pool;
 
+mod diesel_types;
+
 mod handlers {
     pub mod auth;
     pub mod places;
