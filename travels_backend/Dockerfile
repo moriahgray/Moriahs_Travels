@@ -22,8 +22,8 @@ RUN cargo build --release
 # Create a minimal runtime image from Debian
 FROM debian:bookworm-slim
 
-# Install MariaDB runtime libraries needed for the Diesel ORM to connect
-RUN apt-get update && apt-get install -y libmariadb3 ca-certificates && rm -rf /var/lib/apt/lists/*
+# Install MariaDB runtime libraries and client needed for database connection and debugging
+RUN apt-get update && apt-get install -y libmariadb3 mariadb-client ca-certificates && rm -rf /var/lib/apt/lists/*
 
 # Copy the compiled binary from the build image
 COPY --from=builder /usr/src/travels_backend/target/release/travels_backend /usr/local/bin/travels_backend

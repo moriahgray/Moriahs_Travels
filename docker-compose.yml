@@ -1,12 +1,12 @@
-version: '3.8'
 services:
-  backend:
-    build:
-      context: ./travels_backend
+  travels_backend:
+    image: moriahs_travels-backend
+    env_file:
+      - .env
     ports:
       - "8080:8080"
-    networks:
-      - travels-network
+    depends_on:
+      - database
 
   frontend:
     build:
