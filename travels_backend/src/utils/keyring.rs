@@ -4,7 +4,6 @@ use std::io::{self, Write};
 const SERVICE_NAME: &str = "moriahsTravels";
 const USERNAME: &str = "root";
 
-// Function to store the database password securely
 pub fn store_password() {
     print!("Enter your database password: ");
     io::stdout().flush().unwrap();
@@ -18,24 +17,22 @@ pub fn store_password() {
     println!("Password stored securely.");
 }
 
-// Function to retrieve the stored database password
 pub fn get_password() -> String {
     match Entry::new(SERVICE_NAME, USERNAME) {
         Ok(entry) => match entry.get_password() {
             Ok(password) => password,
-            Err(e) => {
-                eprintln!("Failed to retrieve password from keyring: {}", e);
+            Err(_) => {
+                eprintln!("Failed to retrieve password from keyring.");
                 std::process::exit(1);
             }
         },
-        Err(e) => {
-            eprintln!("Failed to create keyring entry: {}", e);
+        Err(_) => {
+            eprintln!("Failed to create keyring entry.");
             std::process::exit(1);
         }
     }
 }
 
-// Function to remove the stored password (if needed)
 pub fn delete_password() {
     let entry = Entry::new(SERVICE_NAME, USERNAME).expect("Failed to create keyring entry");
     entry.delete_password().expect("Failed to delete password");

@@ -1,18 +1,20 @@
+version: "3.7"
+
 services:
   travels_backend:
     build:
       context: ./travels_backend
     container_name: travels_backend_container
-    env_file:
-      - .env
-    environment:
-      - DATABASE_PASSWORD=${DATABASE_PASSWORD:-example_password} # Default for Docker runtime
+    secrets:
+      - database_password
     ports:
       - "8080:8080"
     depends_on:
       - database
     networks:
       - travels-network
+    environment:
+      - DATABASE_URL=mysql://root@database:3306/moriahsTravels
 
   database:
     image: mariadb:latest
@@ -34,9 +36,15 @@ services:
       context: ./travels_frontend
     container_name: travels_frontend_container
     ports:
-      - "19000:19000"
+      - "19000:19000" 
     networks:
       - travels-network
+    environment:
+      - REACT_APP_BACKEND_URL=http://travels_backend:8080  
+
+secrets:
+  database_password:
+    external: true 
 
 networks:
   travels-network:
