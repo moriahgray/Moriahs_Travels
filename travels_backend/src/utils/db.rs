@@ -10,18 +10,17 @@ pub fn init_pool() -> DbPool {
     // Retrieve the database password securely from the keyring
     let password = keyring::get_password();
 
+    // Debugging: Print the password (only for testing purposes)
+    println!("Retrieved password: {}", password);
+
     // Construct the database URL dynamically
     let database_url_template = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let database_url = database_url_template.replace("PLACEHOLDER", &password);
 
-    let password = keyring::get_password();
-    println!("Retrieved password: {}", password); // For debugging only
-
-
     // Initialize the connection manager
     let manager = ConnectionManager::<MysqlConnection>::new(database_url);
     r2d2::Pool::builder()
-        .max_size(15) // Increased pool size for better performance
+        .max_size(15)
         .build(manager)
         .expect("Failed to create database pool")
 }
