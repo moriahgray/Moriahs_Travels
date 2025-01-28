@@ -2,9 +2,7 @@ version: "3.7"
 
 services:
   travels_backend:
-    build:
-      context: ./travels_backend
-    container_name: travels_backend_container
+    image: travels_backend_image  # Use the locally built backend image
     secrets:
       - database_password
     ports:
@@ -12,16 +10,14 @@ services:
     depends_on:
       - database
     networks:
-      - travels-network
+      - travels-network  # Use the overlay network here
     environment:
       - DATABASE_URL=mysql://root@database:3306/moriahsTravels
 
   database:
     image: mariadb:latest
-    container_name: travels_db
-    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: example_password
+      MYSQL_ROOT_PASSWORD: example_password  # This is a fallback password
       MYSQL_DATABASE: moriahsTravels
       MYSQL_USER: root
     ports:
@@ -29,26 +25,24 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     networks:
-      - travels-network
+      - travels-network  # Use the overlay network here
 
   frontend:
-    build:
-      context: ./travels_frontend
-    container_name: travels_frontend_container
+    image: travels_frontend_image  # Use the locally built frontend image
     ports:
-      - "19000:19000" 
+      - "19000:19000"
     networks:
-      - travels-network
+      - travels-network  # Use the overlay network here
     environment:
-      - REACT_APP_BACKEND_URL=http://travels_backend:8080  
+      - REACT_APP_BACKEND_URL=http://travels_backend:8080
 
 secrets:
   database_password:
-    external: true 
+    external: true  # Refers to the pre-created Docker secret
 
 networks:
   travels-network:
-    driver: bridge
+    driver: overlay  # Use the overlay network driver in Docker Swarm
 
 volumes:
   db_data:
