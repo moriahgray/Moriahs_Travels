@@ -2,47 +2,30 @@ version: "3.7"
 
 services:
   travels_backend:
-    image: travels_backend_image  
-    secrets:
-      - database_password
+    image: moriahgray/moriahs_travels_backend:latest
     ports:
       - "8080:8080"
-    depends_on:
-      - database
     networks:
-      - travels-network 
-    environment:
-      - DATABASE_URL=mysql://root@database:3306/moriahsTravels
+      - travels-network
 
-  database:
-    image: mariadb:latest
-    environment:
-      MYSQL_ROOT_PASSWORD: example_password  
-      MYSQL_DATABASE: moriahsTravels
-      MYSQL_USER: root
-    ports:
-      - "3306:3306"
-    volumes:
-      - db_data:/var/lib/mysql
-    networks:
-      - travels-network  
-
-  frontend:
-    image: travels_frontend_image  
+  travels_frontend:
+    image: moriahgray/moriahs_travels_frontend:latest 
     ports:
       - "19000:19000"
     networks:
       - travels-network
-    environment:
-      - REACT_APP_BACKEND_URL=http://travels_backend:8080
 
-secrets:
-  database_password:
-    external: true  
+  travels_database:
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: example_password
+      MYSQL_DATABASE: moriahsTravels
+      MYSQL_USER: root
+    ports:
+      - "3306:3306"
+    networks:
+      - travels-network
 
 networks:
   travels-network:
     driver: overlay
-
-volumes:
-  db_data:
