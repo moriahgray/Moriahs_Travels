@@ -3,7 +3,9 @@ version: "3.7"
 services:
   travels_backend:
     image: moriahgray/moriahs_travels_backend:latest
-    restart: "no"
+    deploy:
+      mode: replicated
+      replicas: 0
     ports:
       - "8080:8080"
     networks:
@@ -11,7 +13,9 @@ services:
 
   travels_frontend:
     image: moriahgray/moriahs_travels_frontend:latest 
-    restart: "no"
+    deploy:
+      mode: replicated
+      replicas: 0
     ports:
       - "19000:19000"
     networks:
@@ -19,7 +23,9 @@ services:
 
   travels_database:
     image: mariadb:latest
-    restart: "no"
+    deploy:
+      mode: replicated
+      replicas: 0
     environment:
       MYSQL_ROOT_PASSWORD: example_password
       MYSQL_DATABASE: moriahsTravels
