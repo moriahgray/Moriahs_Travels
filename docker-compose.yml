@@ -24,7 +24,12 @@ services:
       mode: replicated
       replicas: 1 
     ports:
-      - "19000:19000"
+      - "8081:8081"  # Metro Bundler
+      - "19000:19000"  # Expo DevTools
+      - "19001:19001"  # Debugger
+      - "19002:19002"  # WebSocket for Live Reload
+    stdin_open: true
+    tty: true
     networks:
       - travels-network
 
