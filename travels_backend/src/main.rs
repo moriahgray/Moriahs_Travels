@@ -35,7 +35,8 @@ async fn main() -> std::io::Result<()> {
         .execute(&mut conn)
         .expect("Database connection test failed");
 
-    println!("Starting server on http://127.0.0.1:8000");
+    // Debugging: Print what the server is binding to
+    println!("🔥 Binding Actix-web server to 0.0.0.0:8000"); 
 
     // Start the Actix web server
     HttpServer::new(move || {
@@ -44,7 +45,7 @@ async fn main() -> std::io::Result<()> {
             .configure(auth_routes)  
             .configure(places_routes) 
     })
-    .bind("0.0.0.0:8000")?
+    .bind("0.0.0.0:8000")?  
     .run()
     .await
 }
