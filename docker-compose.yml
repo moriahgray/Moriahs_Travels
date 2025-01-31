@@ -8,8 +8,10 @@ services:
       replicas: 1 
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     environment:
-      DATABASE_URL: "mysql://root@travels_database:3306/moriahsTravels"
+      DATABASE_URL: "mysql://root:PLACEHOLDER@travels_database:3306/moriahsTravels"
       DATABASE_PASSWORD_FILE: "/run/secrets/database_password"
     secrets:
       - database_password

@@ -18,7 +18,7 @@ pub fn init_pool() -> DbPool {
     // Replace the placeholder with the actual password retrieved from the secret
     let database_url = database_url_template.replace("PLACEHOLDER", &password);
 
-    println!("🔹 Final DATABASE_URL: {}", database_url); // Debug log
+    println!("🔹 Final DATABASE_URL: {}", database_url);
 
     // Retry logic to handle possible database startup delays
     for attempt in 1..=5 {
@@ -31,7 +31,7 @@ pub fn init_pool() -> DbPool {
             }
             Err(e) => {
                 eprintln!("❌ Attempt {} - Failed to create pool: {}", attempt, e);
-                thread::sleep(Duration::from_secs(5)); // Wait before retrying
+                thread::sleep(Duration::from_secs(5));
             }
         }
     }
@@ -39,18 +39,18 @@ pub fn init_pool() -> DbPool {
     panic!("❌ All attempts failed! Could not create database pool.");
 }
 
-/// Reads the database password from Docker secret
+// Reads the database password from Docker secret or falls back to .env
 fn get_database_password() -> String {
     let secret_path = "/run/secrets/database_password";
-    match fs::read_to_string(secret_path) {
-        Ok(password) => {
-            let trimmed_password = password.trim().to_string();
-            println!("🔹 Read password from secret: '{}'", trimmed_password);
-            trimmed_password
-        }
-        Err(e) => {
-            eprintln!("❌ Failed to retrieve password from Docker secret: {}", e);
-            std::process::exit(1);
-        }
+    if let Ok(password) = fs::read_to_string(secret_path) {
+        let trimmed_password = password.trim().to_string();
+        println!("🔹 Read password from secret: '{}'", trimmed_password);
+        return trimmed_password;
     }
+
+    // Fallback to environment variable if the secret is missing
+    env::var("DATABASE_PASSWORD").unwrap_or_else(|_| {
+        eprintln!("❌ Failed to retrieve password from Docker secret and .env");
+        std::process::exit(1);
+    })
 }
