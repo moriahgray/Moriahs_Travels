@@ -29,7 +29,7 @@ RUN apt-get update && apt-get install -y libmariadb3 mariadb-client ca-certifica
 COPY --from=builder /usr/src/travels_backend/target/release/travels_backend /usr/local/bin/travels_backend
 
 # Expose port 8080 to access the backend
-EXPOSE 8080
+EXPOSE 8000
 
 # Command to run the backend
 CMD ["/usr/local/bin/travels_backend"]
