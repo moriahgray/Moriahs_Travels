@@ -6,14 +6,11 @@ const LOCAL_IP = "192.168.1.19";
 const LOCAL_ANDROID = "10.0.2.2";
 const LOCAL_PORT = "8000";
 
-export const API_URL =
-  Platform.OS === "android"
-    ? `http://${LOCAL_ANDROID}:${LOCAL_PORT}`
-    : `http://${LOCAL_IP}:${LOCAL_PORT}`;
-    
-/**
- * Helper function to get headers, including Authorization token.
- */
+const API_URL = Platform.OS === "android" || Platform.OS === "ios"
+   ? "http://travels_backend:8000" 
+   : `http://${LOCAL_IP}:${LOCAL_PORT}`;
+
+
 const getHeaders = async () => {
   const token = await getFromStorage("token");
   return {
