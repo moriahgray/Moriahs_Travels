@@ -40,11 +40,11 @@ async fn main() -> std::io::Result<()> {
     // Start the Actix web server
     HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(pool.clone()))  // Pass the pool to the app
-            .configure(auth_routes)  // Add auth routes
-            .configure(places_routes)  // Add places routes
+            .app_data(web::Data::new(pool.clone())) 
+            .configure(auth_routes)  
+            .configure(places_routes) 
     })
-    .bind("127.0.0.1:8000")?  // Bind the server to port 8000
-    .run()  // Start the server
+    .bind("0.0.0.0:8000")?
+    .run()
     .await
 }
