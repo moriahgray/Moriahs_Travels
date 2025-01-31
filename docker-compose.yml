@@ -7,7 +7,7 @@ services:
       mode: replicated
       replicas: 1 
     ports:
-      - "8080:8080"
+      - "8000:8000" 
     env_file:
       - .env
     environment:
@@ -16,7 +16,7 @@ services:
     secrets:
       - database_password
     networks:
-      - travels-network
+      - travels_stack_travels-network 
 
   travels_frontend:
     image: moriahgray/moriahs_travels_frontend:latest
@@ -31,7 +31,7 @@ services:
     stdin_open: true
     tty: true
     networks:
-      - travels-network
+      - travels_stack_travels-network  
 
   travels_database:
     image: mariadb:latest
@@ -47,12 +47,12 @@ services:
     ports:
       - "3306:3306"
     networks:
-      - travels-network
+      - travels_stack_travels-network 
 
 secrets:
   database_password:
     external: true
 
 networks:
-  travels-network:
-    driver: overlay
+  travels_stack_travels-network:
+    external: true 
