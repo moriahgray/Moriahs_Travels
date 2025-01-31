@@ -31,7 +31,7 @@ services:
     stdin_open: true
     tty: true
     networks:
-      - travels_stack_travels-network  
+      - travels_stack_travels-network 
 
   travels_database:
     image: mariadb:latest
