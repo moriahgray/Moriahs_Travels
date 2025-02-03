@@ -7,7 +7,7 @@ const LOCAL_ANDROID = "10.0.2.2";
 const LOCAL_PORT = "8000";
 
 const API_URL = Platform.OS === "android" || Platform.OS === "ios"
-   ? "http://travels_backend:8000" 
+   ? "http://travels_stack_travels_backend:8000" 
    : `http://${LOCAL_IP}:${LOCAL_PORT}`;
 
 
