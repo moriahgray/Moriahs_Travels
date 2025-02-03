@@ -18,7 +18,7 @@ pub struct NewPlaceRequest {
     pub hotels: Option<String>,
     pub restaurants: Option<String>,
     #[serde(rename = "imageUri")]
-    pub image_uri: Option<String>,  // Correct field name for JSON input
+    pub image_uri: Option<String>,
     pub address: Option<String>,
 }
 

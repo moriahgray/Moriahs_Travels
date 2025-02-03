@@ -18,7 +18,7 @@ pub fn init_pool() -> DbPool {
     let database_url = database_url_template.replace("PLACEHOLDER", &password);
 
     if database_url.is_empty() {
-        eprintln!("❌ Final DATABASE_URL is EMPTY after replacement!");
+        eprintln!("Final DATABASE_URL is EMPTY after replacement!");
         std::process::exit(1);
     }
 
@@ -33,13 +33,13 @@ pub fn init_pool() -> DbPool {
                 return pool;
             }
             Err(e) => {
-                eprintln!("❌ Attempt {} - Failed to create pool: {}", attempt, e);
+                eprintln!("Attempt {} - Failed to create pool: {}", attempt, e);
                 thread::sleep(Duration::from_secs(5));
             }
         }
     }
 
-    panic!("❌ All attempts failed! Could not create database pool.");
+    panic!("All attempts failed! Could not create database pool.");
 }
 
 // Reads the database password from Docker secret or falls back to an environment variable
@@ -59,7 +59,7 @@ fn get_database_password() -> String {
             password
         }
         Err(_) => {
-            eprintln!("❌ Failed to retrieve password from Docker secret and environment variable");
+            eprintln!("Failed to retrieve password from Docker secret and environment variable");
             std::process::exit(1);
         }
     }
