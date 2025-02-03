@@ -48,7 +48,7 @@ fn get_database_password() -> String {
 
     if let Ok(password) = fs::read_to_string(secret_path) {
         let trimmed_password = password.trim().to_string();
-        println!("🔹 Read password from secret file: '{}'", trimmed_password);
+        println!("Read password from secret file");
         return trimmed_password;
     }
 
