@@ -1,20 +1,18 @@
 use diesel::r2d2::{self, ConnectionManager};
 use diesel::MysqlConnection;
-use dotenvy::dotenv;
 use std::{fs, env, thread, time::Duration};
 
 pub type DbPool = r2d2::Pool<ConnectionManager<MysqlConnection>>;
 
 pub fn init_pool() -> DbPool {
-    dotenv().ok(); // No need for this if removing `.env`, but safe to keep
 
     let password = get_database_password();
 
     // Hardcoded DATABASE_URL with "PLACEHOLDER"
     let database_url_template = "mysql://root:PLACEHOLDER@travels_stack_travels_database:3306/moriahsTravels".to_string();
 
-    println!("🔹 Original DATABASE_URL: '{}'", database_url_template);
-    println!("🔹 Retrieved Password: '{}'", password);
+    println!("Original DATABASE_URL: '{}'", database_url_template);
+    println!(" Retrieved Password");
 
     // Replace "PLACEHOLDER" with the actual password from secrets
     let database_url = database_url_template.replace("PLACEHOLDER", &password);
@@ -24,14 +22,14 @@ pub fn init_pool() -> DbPool {
         std::process::exit(1);
     }
 
-    println!("🔹 Final DATABASE_URL: '{}'", database_url);
+    println!("Final DATABASE_URL: '{}'", database_url);
 
     for attempt in 1..=5 {
         let manager = ConnectionManager::<MysqlConnection>::new(database_url.clone());
 
         match r2d2::Pool::builder().max_size(15).build(manager) {
             Ok(pool) => {
-                println!("✅ Database pool created successfully!");
+                println!("Database pool created successfully!");
                 return pool;
             }
             Err(e) => {
