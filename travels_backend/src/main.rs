@@ -1,7 +1,6 @@
 use actix_web::{web, App, HttpServer};
 use actix_cors::Cors;
 use diesel::prelude::*;
-use dotenvy::dotenv;
 
 mod diesel_types;
 mod handlers {
@@ -21,8 +20,6 @@ use crate::utils::db::init_pool;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    // Load environment variables from .env file
-    dotenv().ok();
 
     // Initialize the database connection pool (Docker Secrets will now provide the password)
     let pool = init_pool();
