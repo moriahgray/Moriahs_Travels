@@ -6,24 +6,17 @@ use std::{fs, env, thread, time::Duration};
 pub type DbPool = r2d2::Pool<ConnectionManager<MysqlConnection>>;
 
 pub fn init_pool() -> DbPool {
-    dotenv().ok(); // Load environment variables
+    dotenv().ok(); // No need for this if removing `.env`, but safe to keep
 
     let password = get_database_password();
 
-    let database_url_template = env::var("DATABASE_URL").unwrap_or_else(|_| {
-        eprintln!("❌ DATABASE_URL is missing or empty!");
-        std::process::exit(1);
-    });
+    // Hardcoded DATABASE_URL with "PLACEHOLDER"
+    let database_url_template = "mysql://root:PLACEHOLDER@travels_stack_travels_database:3306/moriahsTravels".to_string();
 
     println!("🔹 Original DATABASE_URL: '{}'", database_url_template);
     println!("🔹 Retrieved Password: '{}'", password);
 
-    // Debug: Ensure DATABASE_URL contains "PLACEHOLDER"
-    if !database_url_template.contains("PLACEHOLDER") {
-        eprintln!("❌ DATABASE_URL does NOT contain 'PLACEHOLDER'! Possible issue in environment variables.");
-        std::process::exit(1);
-    }
-
+    // Replace "PLACEHOLDER" with the actual password from secrets
     let database_url = database_url_template.replace("PLACEHOLDER", &password);
 
     if database_url.is_empty() {
