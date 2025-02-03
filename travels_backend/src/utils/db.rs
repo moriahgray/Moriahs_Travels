@@ -55,7 +55,7 @@ fn get_database_password() -> String {
     // Fallback to environment variable if the secret is missing
     match env::var("DATABASE_PASSWORD") {
         Ok(password) => {
-            println!("🔹 Read password from environment variable: '{}'", password);
+            println!("Read password from environment variable");
             password
         }
         Err(_) => {
