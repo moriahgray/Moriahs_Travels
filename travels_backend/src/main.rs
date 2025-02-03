@@ -1,17 +1,15 @@
 use actix_web::{web, App, HttpServer};
+use actix_cors::Cors;
 use diesel::prelude::*;
 use dotenvy::dotenv;
 
 mod diesel_types;
-
 mod handlers {
     pub mod auth;
     pub mod places;
 }
-
 mod models;
 mod schema;
-
 mod utils {
     pub mod db;
     pub mod jwt;
@@ -36,16 +34,17 @@ async fn main() -> std::io::Result<()> {
         .expect("Database connection test failed");
 
     // Debugging: Print what the server is binding to
-    println!("🔥 Binding Actix-web server to 0.0.0.0:8000"); 
+    println!("Binding Actix-web server to 0.0.0.0:8000");
 
     // Start the Actix web server
     HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(pool.clone())) 
+            .wrap(Cors::permissive()) 
+            .app_data(web::Data::new(pool.clone()))
             .configure(auth_routes)  
             .configure(places_routes) 
     })
-    .bind("0.0.0.0:8000")?  
+    .bind("0.0.0.0:8000")? 
     .run()
     .await
 }
