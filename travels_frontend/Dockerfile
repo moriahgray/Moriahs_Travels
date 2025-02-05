@@ -5,12 +5,7 @@ FROM node:18
 WORKDIR /usr/src/app
 
 # Copy package.json and package-lock.json first
-COPY package.json ./
-
-# Ensure package-lock.json exists before copying it
-RUN if [ -f package-lock.json ]; then echo "package-lock.json exists"; else npm install --package-lock-only; fi
-
-COPY package-lock.json ./
+COPY package.json package-lock.json ./
 
 # Install dependencies using npm
 RUN npm ci
