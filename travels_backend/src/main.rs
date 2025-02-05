@@ -1,4 +1,4 @@
-use actix_web::{web, App, HttpServer};
+use actix_web::{web, App, HttpServer, Responder, HttpResponse};
 use actix_cors::Cors;
 use diesel::prelude::*;
 
@@ -18,9 +18,14 @@ use handlers::auth::init_routes as auth_routes;
 use handlers::places::init_routes as places_routes;
 use crate::utils::db::init_pool;
 
+/// Health check route to test if the server is running
+async fn health_check() -> impl Responder {
+    HttpResponse::Ok().body("Server is running!")
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    // Initialize the database connection pool (Docker Secrets will now provide the password)
+    // Initialize the database connection pool
     let pool = init_pool();
 
     // Test the database connection
@@ -29,18 +34,19 @@ async fn main() -> std::io::Result<()> {
         .execute(&mut conn)
         .expect("Database connection test failed");
 
-    // Debugging: Print what the server is binding to
+    // Debugging: Print that the server is binding correctly
     println!("Binding Actix-web server to 0.0.0.0:8000");
 
-    // Start the Actix web server
+    // Start the Actix-web server
     HttpServer::new(move || {
         App::new()
             .wrap(Cors::permissive())
             .app_data(web::Data::new(pool.clone()))
-            .configure(auth_routes)  
-            .configure(places_routes) 
+            .configure(auth_routes)
+            .configure(places_routes)
+            .route("/health", web::get().to(health_check))
     })
-    .bind("0.0.0.0:8000")?
+    .bind("0.0.0.0:8000")? 
     .run()
     .await
 }
