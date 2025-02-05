@@ -20,7 +20,6 @@ use crate::utils::db::init_pool;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-
     // Initialize the database connection pool (Docker Secrets will now provide the password)
     let pool = init_pool();
 
@@ -36,12 +35,12 @@ async fn main() -> std::io::Result<()> {
     // Start the Actix web server
     HttpServer::new(move || {
         App::new()
-            .wrap(Cors::permissive()) 
+            .wrap(Cors::permissive())
             .app_data(web::Data::new(pool.clone()))
             .configure(auth_routes)  
             .configure(places_routes) 
     })
-    .bind("0.0.0.0:8000")? 
+    .bind("0.0.0.0:8000")?
     .run()
     .await
 }

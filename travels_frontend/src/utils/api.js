@@ -1,15 +1,15 @@
 import { Platform } from "react-native";
 import { getFromStorage } from "./storage";
 
-// Local development IP addresses
+// Define network addresses
 const LOCAL_IP = "192.168.1.19";
 const LOCAL_ANDROID = "10.0.2.2";
 const LOCAL_PORT = "8000";
 
-const API_URL = Platform.OS === "android" || Platform.OS === "ios"
-   ? "http://travels_stack_travels_backend:8000" 
-   : `http://${LOCAL_IP}:${LOCAL_PORT}`;
-
+// Determine the correct API URL based on the platform
+const API_URL = Platform.OS === "android"
+  ? `http://${LOCAL_ANDROID}:${LOCAL_PORT}`  // Android emulator
+  : `http://${LOCAL_IP}:${LOCAL_PORT}`;  // iOS emulator or physical device
 
 const getHeaders = async () => {
   const token = await getFromStorage("token");
@@ -19,9 +19,7 @@ const getHeaders = async () => {
   };
 };
 
-/**
- * Fetch places based on category.
- */
+// Fetch places based on category.
 export const getPlaces = async (category) => {
   try {
     const response = await fetch(`${API_URL}/places?category=${category}`, {
@@ -37,9 +35,7 @@ export const getPlaces = async (category) => {
   }
 };
 
-/**
- * Add a new place.
- */
+// Add a new place.
 export const addPlace = async (placeData) => {
   try {
     const response = await fetch(`${API_URL}/places`, {
@@ -57,9 +53,7 @@ export const addPlace = async (placeData) => {
   }
 };
 
-/**
- * Delete a place by ID.
- */
+// Delete a place by ID.
 export const deletePlace = async (placeId) => {
   try {
     const response = await fetch(`${API_URL}/places/${placeId}`, {
@@ -76,9 +70,7 @@ export const deletePlace = async (placeId) => {
   }
 };
 
-/**
- * Log in a user.
- */
+// Log in a user.
 export const login = async (credentials) => {
   try {
     const response = await fetch(`${API_URL}/auth/login`, {
@@ -98,9 +90,7 @@ export const login = async (credentials) => {
   }
 };
 
-/**
- * Sign up a new user.
- */
+// Sign up a new user.
 export const signup = async (userData) => {
   try {
     const response = await fetch(`${API_URL}/auth/signup`, {
@@ -119,3 +109,5 @@ export const signup = async (userData) => {
     throw error;
   }
 };
+
+export default API_URL;
