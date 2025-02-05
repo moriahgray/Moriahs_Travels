@@ -13,6 +13,9 @@ COPY package.json yarn.lock ./
 # Install dependencies and upgrade packages
 RUN yarn install && yarn upgrade
 
+# Ensure missing dependencies like @react-native-community/cli-server-api are installed
+RUN yarn add @react-native-community/cli-server-api
+
 # Debug: Check for node_modules after installation
 RUN ls -la node_modules
 
