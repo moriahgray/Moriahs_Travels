@@ -23,4 +23,4 @@ EXPOSE 19000
 RUN chmod -R 777 /usr/src/app/node_modules
 
 # Start the Expo app using npm
-CMD ["npm", "start"]
+CMD ["npm", "start", "--", "--tunnel"]
