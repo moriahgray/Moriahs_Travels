@@ -1640,6 +1640,13 @@
     use-latest-callback "^0.2.1"
     use-sync-external-store "^1.2.2"
 
+"@react-navigation/elements@2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@react-navigation/elements/-/elements-2.2.0.tgz#9b5998021fc0d0222adb22bc1047f4167d1aa0c0"
+  integrity sha512-+DIVCwaJsVCk/yPf5N1NKyRkQ8/jrLh8FRfqgzxAygrOgAYuqI6cZGvAJvOhNTbbgek1Lq1J2UOWn1wIDxPwag==
+  dependencies:
+    color "^4.2.3"
+
 "@react-navigation/elements@^2.2.5":
   version "2.2.5"
   resolved "https://registry.yarnpkg.com/@react-navigation/elements/-/elements-2.2.5.tgz#0e2ca76e2003e96b417a3d7c2829bf1afd69193f"
