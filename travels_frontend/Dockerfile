@@ -4,20 +4,16 @@ FROM node:18
 # Set the working directory inside the container
 WORKDIR /usr/src/app
 
-# Debug: Verify global installation of @expo/cli
-RUN yarn global list
+# Copy package.json and package-lock.json first
+COPY package.json ./
 
-# Copy package.json and yarn.lock first to leverage Docker cache
-COPY package.json yarn.lock ./
+# Ensure package-lock.json exists before copying it
+RUN if [ -f package-lock.json ]; then echo "package-lock.json exists"; else npm install --package-lock-only; fi
 
-# Install dependencies and upgrade packages
-RUN yarn install && yarn upgrade
+COPY package-lock.json ./
 
-# Ensure missing dependencies like @react-native-community/cli-server-api are installed
-RUN yarn add @react-native-community/cli-server-api
-
-# Debug: Check for node_modules after installation
-RUN ls -la node_modules
+# Install dependencies using npm
+RUN npm ci
 
 # Copy the rest of the application code
 COPY . .
@@ -25,8 +21,8 @@ COPY . .
 # Expose the port for Expo
 EXPOSE 19000
 
-# Ensure permissions (optional, prevents permission issues inside containers)
+# Set permissions (optional, prevents permission issues inside containers)
 RUN chmod -R 777 /usr/src/app/node_modules
 
-# Start the Expo app using yarn
-CMD ["yarn", "start"]
+# Start the Expo app using npm
+CMD ["npm", "start"]
