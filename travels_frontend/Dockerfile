@@ -10,17 +10,17 @@ COPY package.json package-lock.json ./
 # Install dependencies
 RUN npm install
 
-# Upgrade dependencies to their latest versions
-RUN npm upgrade
+# Upgrade dependencies to latest Expo version
+RUN npx expo install --fix
 
 # Copy the rest of the application code
 COPY . .
 
-# Expose the port for Expo
-EXPOSE 19000
+# Expose Expo's default ports
+EXPOSE 19000 19001 19002
 
 # Set permissions (optional, prevents permission issues inside containers)
 RUN chmod -R 777 /usr/src/app/node_modules
 
-# Start the Expo app using npm
-CMD ["npm", "start", "--", "--tunnel"]
+# Start Expo using NPX and Tunnel mode
+CMD ["npx", "expo", "start", "--tunnel"]
