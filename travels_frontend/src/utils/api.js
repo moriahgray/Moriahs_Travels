@@ -2,7 +2,7 @@ import { Platform } from "react-native";
 import { getFromStorage } from "./storage";
 
 // Define network addresses
-const LOCAL_IP = "192.168.1.19";
+const LOCAL_IP = "192.168.1.20";
 const LOCAL_ANDROID = "10.0.2.2";
 const LOCAL_PORT = "8000";
 
