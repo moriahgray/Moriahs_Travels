@@ -7,8 +7,11 @@ WORKDIR /usr/src/app
 # Copy package.json and package-lock.json first
 COPY package.json package-lock.json ./
 
-# Install dependencies using npm
-RUN npm ci
+# Install dependencies
+RUN npm install
+
+# Upgrade dependencies to their latest versions
+RUN npm upgrade
 
 # Copy the rest of the application code
 COPY . .
