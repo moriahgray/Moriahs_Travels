@@ -14,7 +14,7 @@ COPY package.json package-lock.json ./
 RUN npm install
 
 # Fix Expo dependencies (optional, only if needed)
-RUN npx expo doctor
+RUN npx expo-doctor
 
 # Copy the rest of the application code
 COPY . .
