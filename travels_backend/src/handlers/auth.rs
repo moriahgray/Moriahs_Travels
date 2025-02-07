@@ -1,10 +1,10 @@
-use actix_web::{web, HttpResponse};
+use actix_web::{get, post, web, HttpResponse, Responder};
 use diesel::prelude::*;
 use serde::Deserialize;
 use crate::models::{User, NewUser};
 use crate::schema::users::dsl::*;
 use crate::utils::db::DbPool;
-use crate::utils::jwt::generate_jwt;
+use crate::utils::jwt::{generate_jwt, decode_jwt};
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use argon2::password_hash::SaltString;
 
@@ -23,19 +23,21 @@ pub struct LoginRequest {
     pub password: String,
 }
 
+#[post("/signup")]
 pub async fn signup(
     pool: web::Data<DbPool>,
     user_data: web::Json<SignupRequest>,
-) -> Result<HttpResponse, actix_web::Error> {
-    let mut conn = pool.get().map_err(|e| {
-        actix_web::error::ErrorInternalServerError(format!("Database connection error: {}", e))
-    })?;
+) -> impl Responder {
+    let mut conn = match pool.get() {
+        Ok(conn) => conn,
+        Err(e) => return HttpResponse::InternalServerError().body(format!("Database connection error: {}", e)),
+    };
 
     let salt = SaltString::generate(&mut rand::thread_rng());
-    let hashed_password = Argon2::default()
-        .hash_password(user_data.password.as_bytes(), &salt)
-        .map_err(|_| actix_web::error::ErrorInternalServerError("Password hashing failed"))?
-        .to_string();
+    let hashed_password = match Argon2::default().hash_password(user_data.password.as_bytes(), &salt) {
+        Ok(hash) => hash.to_string(),
+        Err(_) => return HttpResponse::InternalServerError().body("Password hashing failed"),
+    };
 
     let new_user = NewUser {
         user_id: user_data.user_id.clone(),
@@ -45,68 +47,90 @@ pub async fn signup(
         password: hashed_password,
     };
 
-    diesel::insert_into(users)
+    match diesel::insert_into(users)
         .values(&new_user)
-        .execute(&mut conn)
-        .map_err(|err| {
-            actix_web::error::ErrorInternalServerError(format!("Failed to create user: {}", err))
-        })?;
+        .execute(&mut conn) {
+        Ok(_) => (),
+        Err(err) => return HttpResponse::InternalServerError().body(format!("Failed to create user: {}", err)),
+    }
 
-    let token = generate_jwt(&new_user.user_id).map_err(|_| {
-        actix_web::error::ErrorInternalServerError("JWT generation failed")
-    })?;
+    let token = match generate_jwt(&new_user.user_id) {
+        Ok(token) => token,
+        Err(_) => return HttpResponse::InternalServerError().body("JWT generation failed"),
+    };
 
-    Ok(HttpResponse::Created().json(serde_json::json!({
+    HttpResponse::Created().json(serde_json::json!({
         "message": "User created successfully",
         "token": token
-    })))
+    }))
 }
 
+#[post("/login")]
 pub async fn login(
     pool: web::Data<DbPool>,
     credentials: web::Json<LoginRequest>,
-) -> Result<HttpResponse, actix_web::Error> {
-    let mut conn = pool.get().map_err(|_| {
-        actix_web::error::ErrorInternalServerError("Database connection error")
-    })?;
+) -> impl Responder {
+    let mut conn = match pool.get() {
+        Ok(conn) => conn,
+        Err(_) => return HttpResponse::InternalServerError().body("Database connection error"),
+    };
 
-    let user_result = users
-        .filter(email.eq(&credentials.email))
-        .load::<User>(&mut conn)
-        .map_err(|_| actix_web::error::ErrorInternalServerError("Failed to query user"))?;
+    let user_result = match users.filter(email.eq(&credentials.email))
+        .load::<User>(&mut conn) {
+        Ok(user) => user,
+        Err(_) => return HttpResponse::InternalServerError().body("Failed to query user"),
+    };
 
     let user = match user_result.into_iter().next() {
         Some(user) => user,
-        None => {
-            return Ok(HttpResponse::Unauthorized().json(serde_json::json!({
-                "error": "Invalid email or password"
-            })));
-        }
+        None => return HttpResponse::Unauthorized().json(serde_json::json!({
+            "error": "Invalid email or password"
+        })),
     };
 
-    let parsed_hash = PasswordHash::new(&user.password)
-        .map_err(|_| actix_web::error::ErrorInternalServerError("Invalid stored password hash"))?;
+    let parsed_hash = match PasswordHash::new(&user.password) {
+        Ok(hash) => hash,
+        Err(_) => return HttpResponse::InternalServerError().body("Invalid stored password hash"),
+    };
+
     let is_valid = Argon2::default()
         .verify_password(credentials.password.as_bytes(), &parsed_hash)
         .is_ok();
 
     if !is_valid {
-        return Ok(HttpResponse::Unauthorized().json(serde_json::json!({
+        return HttpResponse::Unauthorized().json(serde_json::json!({
             "error": "Invalid email or password"
-        })));
+        }));
     }
 
-    let token = generate_jwt(&user.user_id).map_err(|_| {
-        actix_web::error::ErrorInternalServerError("JWT generation failed")
-    })?;
+    let token = match generate_jwt(&user.user_id) {
+        Ok(token) => token,
+        Err(_) => return HttpResponse::InternalServerError().body("JWT generation failed"),
+    };
 
-    Ok(HttpResponse::Ok().json(serde_json::json!({
+    HttpResponse::Ok().json(serde_json::json!({
         "message": "Login successful",
         "token": token
-    })))
+    }))
+}
+
+#[get("/auth/verify")]
+pub async fn verify_auth(token_header: web::Header<String>) -> impl Responder {
+    let token = token_header.into_inner();
+
+    match decode_jwt(&token) {
+        Ok(decoded_token) => HttpResponse::Ok().json(serde_json::json!({
+            "message": "Token is valid",
+            "user_id": decoded_token.user_id
+        })),
+        Err(_) => HttpResponse::Unauthorized().json(serde_json::json!({
+            "error": "Invalid or expired token"
+        })),
+    }
 }
 
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
-    cfg.service(web::resource("/signup").route(web::post().to(signup)))
-        .service(web::resource("/login").route(web::post().to(login)));
+    cfg.service(signup)
+        .service(login)
+        .service(verify_auth);
 }
