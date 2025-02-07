@@ -73,9 +73,14 @@ pub async fn login_user(
         .expect("Error fetching user");
 
     // Check if the provided password matches the stored hashed password
-    let password_matches = Argon2::default()
-    .verify_password(item.password.as_bytes(), &PasswordHash::new(user.password.as_ref().unwrap_or_else(|| &"".to_string())).unwrap())
-    .is_ok();
+    let password_matches = if let Some(stored_password) = &user.password {
+        Argon2::default()
+            .verify_password(item.password.as_bytes(), &PasswordHash::new(stored_password).unwrap())
+            .is_ok()
+    } else {
+        false // Handle the case where password is None
+    };
+    
 
     // If the password doesn't match, return Unauthorized response
     if !password_matches {

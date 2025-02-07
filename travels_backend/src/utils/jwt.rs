@@ -10,13 +10,6 @@ pub struct Claims {
     pub exp: usize,   // Expiration time
 }
 
-impl Claims {
-    // Getter for the sub field
-    pub fn sub(&self) -> &str {
-        &self.sub
-    }
-}
-
 // Generates a JWT token for a given user ID
 pub fn generate_jwt(user_id: &str) -> Result<String, JwtError> {
     let expiration = Utc::now()
