@@ -24,7 +24,7 @@ export default function SignUpScreen({ navigation }) {
     }
   
     try {
-      const response = await signup({ user_id, first_name, last_name, email, password });
+      await signup({ user_id, first_name, last_name, email, password });
       navigation.navigate("Login");
     } catch (error) {
       console.error("Signup failed:", error.message || error);
@@ -73,4 +73,3 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
   input: { borderWidth: 1, borderColor: "#ccc", padding: 10, marginBottom: 10 },
 });
-
