@@ -26,6 +26,8 @@ services:
       - "19000:19000"  # Expo DevTools
       - "19001:19001"  # Debugger
       - "19002:19002"  # WebSocket for Live Reload
+    environment:
+      - REACT_NATIVE_APP_API_URL=http://travels_stack_travels_backend:8000
     stdin_open: true
     tty: true
     networks:
@@ -53,4 +55,4 @@ secrets:
 
 networks:
   travels_stack_travels-network:
-    external: true  
+    external: true   

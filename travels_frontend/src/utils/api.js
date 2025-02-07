@@ -1,15 +1,8 @@
-import { Platform } from "react-native";
+// import { Platform } from "react-native";
 import { getFromStorage } from "./storage";
 
-// Define network addresses
-const LOCAL_IP = "192.168.1.20";
-const LOCAL_ANDROID = "10.0.2.2";
-const LOCAL_PORT = "8000";
-
-// Determine the correct API URL based on the platform
-const API_URL = Platform.OS === "android"
-  ? `http://${LOCAL_ANDROID}:${LOCAL_PORT}`
-  : `http://${LOCAL_IP}:${LOCAL_PORT}`;
+// Get API URL from environment variable or fallback to default
+const API_URL = process.env.REACT_NATIVE_APP_API_URL || "http://travels_stack_travels_backend:8000"; 
 
 const getHeaders = async () => {
   const token = await getFromStorage("token");
@@ -104,7 +97,7 @@ export const signup = async (userData) => {
     });
 
     console.log("Raw Response:", response);
-
+    
     const data = await response.json();
     console.log("Response Data:", data);
 
