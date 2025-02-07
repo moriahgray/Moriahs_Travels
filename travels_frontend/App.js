@@ -5,6 +5,7 @@ import AuthNavigator from "./src/navigation/authNavigator";
 import MainNavigator from "./src/navigation/mainNavigator";
 import { getToken, removeToken } from "./src/utils/storage";
 import jwtDecode from "jwt-decode";
+import API_URL from "./src/utils/api"; // Import backend URL
 
 const Stack = createStackNavigator();
 
@@ -19,27 +20,53 @@ export default function App() {
 
         if (token) {
           const decoded = jwtDecode(token);
+          console.log("Decoded Token:", decoded);
+
           const currentTime = Date.now() / 1000;
+          console.log("Current Time:", currentTime, "Token Expiry:", decoded.exp);
 
           if (decoded.exp > currentTime) {
-            setIsAuthenticated(true);
+            console.log("Token is valid locally. Checking with backend...");
 
-            // Automatically log out when the token expires
-            const timeUntilExpiry = (decoded.exp - currentTime) * 1000;
-            setTimeout(async () => {
-              setIsAuthenticated(false);
+            // Step 1: Verify the token with the backend
+            const response = await fetch(`${API_URL}/auth/verify`, {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            });
+
+            const data = await response.json();
+            console.log("Backend Token Verification Response:", data);
+
+            if (response.ok) {
+              console.log("Token is valid on the server. User is authenticated.");
+              setIsAuthenticated(true);
+
+              // Step 2: Auto logout when token expires
+              const timeUntilExpiry = (decoded.exp - currentTime) * 1000;
+              console.log(`⌛ Token will expire in ${timeUntilExpiry / 1000} seconds.`);
+
+              setTimeout(async () => {
+                setIsAuthenticated(false);
+                await removeToken();
+                console.log("⚠️ Token expired and removed from storage.");
+              }, timeUntilExpiry);
+            } else {
+              console.log("Server rejected the token. Logging out...");
               await removeToken();
-              console.log("Token expired and removed from storage.");
-            }, timeUntilExpiry);
+              setIsAuthenticated(false);
+            }
           } else {
-            console.log("Token expired, removing...");
+            console.log("Token expired locally, removing...");
             await removeToken();
           }
         } else {
           console.log("No token found, user not authenticated.");
         }
       } catch (error) {
-        console.error("Error decoding token:", error);
+        console.error("Error verifying token:", error);
       }
     };
 
