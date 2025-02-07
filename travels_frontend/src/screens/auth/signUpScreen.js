@@ -1,78 +1,32 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { View, TextInput, Button, StyleSheet } from "react-native";
-import { signup } from "../../utils/api";
+import { saveToken, getToken } from "../../utils/storage"; // Utility functions to manage token storage
+import { login } from "../../utils/api"; // API call function to login
 
-export default function SignUpScreen({ navigation }) {
-  const [first_name, setFirstName] = useState("");
-  const [last_name, setLastName] = useState("");
+export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [user_id, setUserId] = useState("");
 
-  // Function to generate user ID based on first and last names
-  useEffect(() => {
-    if (first_name && last_name) {
-      const generateUserId = `${first_name.slice(0, 3).toLowerCase()}${last_name.slice(0, 3).toLowerCase()}`;
-      setUserId(generateUserId);
-    }
-  }, [first_name, last_name]);
-
-  const handleSignUp = async () => {
-    if (!first_name || !last_name || !email || !password) {
-      console.error("Signup failed: Please fill in all fields.");
-      return;
-    }
-  
+  const handleLogin = async () => {
     try {
-      const response = await signup({ user_id, first_name, last_name, email, password });
-  
-      // Log response to check if the API is returning something unexpected
-      console.log("Signup Response:", response);
-  
-      if (!response || response.error) {
-        throw new Error(response?.error || "Unknown error occurred during signup.");
-      }
-  
-      navigation.navigate("Login");
+      // Call login API and get the JWT token
+      const { token } = await login({ email, password });
+
+      // Save token securely
+      await saveToken(token);
+      
+      // Navigate to the main screen
+      navigation.navigate("MainNavigator");
     } catch (error) {
-      console.error("Signup failed:", error.message || error);
+      console.error("Login failed:", error);
     }
-  };  
+  };
 
   return (
     <View style={styles.container}>
-      <TextInput
-        placeholder="First Name"
-        style={styles.input}
-        onChangeText={setFirstName}
-        value={first_name}
-      />
-      <TextInput
-        placeholder="Last Name"
-        style={styles.input}
-        onChangeText={setLastName}
-        value={last_name}
-      />
-      <TextInput
-        placeholder="Email"
-        style={styles.input}
-        onChangeText={setEmail}
-        value={email}
-      />
-      <TextInput
-        placeholder="Password"
-        style={styles.input}
-        secureTextEntry
-        onChangeText={setPassword}
-        value={password}
-      />
-      <TextInput
-        placeholder="User ID (Auto-generated)"
-        style={styles.input}
-        value={user_id}
-        editable={false}
-      />
-      <Button title="Sign Up" onPress={handleSignUp} />
+      <TextInput placeholder="Email" style={styles.input} onChangeText={setEmail} />
+      <TextInput placeholder="Password" style={styles.input} secureTextEntry onChangeText={setPassword} />
+      <Button title="Log In" onPress={handleLogin} />
     </View>
   );
 }

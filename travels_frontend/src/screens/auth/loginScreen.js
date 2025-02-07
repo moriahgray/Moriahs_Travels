@@ -1,32 +1,44 @@
-import React, { useState } from "react";
-import { View, TextInput, Button, StyleSheet } from "react-native";
-import { login } from "../../utils/api";
-import { saveToken } from "../../utils/storage";
+import { getToken } from "./storage";
 
-export default function LoginScreen({ navigation }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleLogin = async () => {
-    try {
-      const { token } = await login({ email, password });
-      await saveToken(token);
-      navigation.navigate("MainNavigator");
-    } catch (error) {
-      console.error("Login failed:", error);
+// Function to login and get the JWT token
+export const login = async ({ email, password }) => {
+  try {
+    const response = await fetch("http://your-backend-url.com/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+    
+    const data = await response.json();
+    
+    if (response.ok) {
+      return data; // Return the token
+    } else {
+      throw new Error(data.error || "Login failed");
     }
-  };
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
 
-  return (
-    <View style={styles.container}>
-      <TextInput placeholder="Email" style={styles.input} onChangeText={setEmail} />
-      <TextInput placeholder="Password" style={styles.input} secureTextEntry onChangeText={setPassword} />
-      <Button title="Log In" onPress={handleLogin} />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  input: { borderWidth: 1, borderColor: "#ccc", padding: 10, marginBottom: 10 },
-});
+// Example of an API call that requires token authentication
+export const fetchDataWithAuth = async () => {
+  try {
+    const token = await getToken(); // Retrieve the token
+    const response = await fetch("http://your-backend-url.com/protected", {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`, // Add the token to the headers
+      },
+    });
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching data with auth:", error);
+    throw error;
+  }
+};
