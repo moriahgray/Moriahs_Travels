@@ -153,7 +153,7 @@ pub async fn verify_auth(auth_header: web::HeaderMap) -> impl Responder {
     match decode_jwt(&token) {
         Ok(decoded_token) => HttpResponse::Ok().json(serde_json::json!({
             "message": "Token is valid",
-            "user_id": decoded_token.claims.sub
+            "user_id": decoded_token.claims.sub() // Using the getter method for sub
         })),
         Err(_) => HttpResponse::Unauthorized().json(serde_json::json!({
             "error": "Invalid or expired token"
@@ -165,5 +165,5 @@ pub async fn verify_auth(auth_header: web::HeaderMap) -> impl Responder {
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(signup)
         .service(login)
-        .service(verify_auth);  // Ensure verify_auth is added to the routing
+        .service(verify_auth);
 }

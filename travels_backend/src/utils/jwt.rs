@@ -5,9 +5,16 @@ use chrono::{Utc, Duration};
 use jsonwebtoken::errors::Error as JwtError;
 
 #[derive(Serialize, Deserialize)]
-struct Claims {
-    sub: String,
-    exp: usize,
+pub struct Claims {
+    pub sub: String,  // User ID (private field)
+    pub exp: usize,   // Expiration time
+}
+
+impl Claims {
+    // Getter for the sub field
+    pub fn sub(&self) -> &str {
+        &self.sub
+    }
 }
 
 // Generates a JWT token for a given user ID
