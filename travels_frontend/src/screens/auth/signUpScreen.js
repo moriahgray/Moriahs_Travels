@@ -24,12 +24,20 @@ export default function SignUpScreen({ navigation }) {
     }
   
     try {
-      await signup({ user_id, first_name, last_name, email, password });
+      const response = await signup({ user_id, first_name, last_name, email, password });
+  
+      // Log response to check if the API is returning something unexpected
+      console.log("Signup Response:", response);
+  
+      if (!response || response.error) {
+        throw new Error(response?.error || "Unknown error occurred during signup.");
+      }
+  
       navigation.navigate("Login");
     } catch (error) {
       console.error("Signup failed:", error.message || error);
     }
-  };
+  };  
 
   return (
     <View style={styles.container}>
