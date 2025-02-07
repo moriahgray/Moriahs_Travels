@@ -5,9 +5,8 @@ use crate::schema::users::dsl::*;
 use crate::utils::db::DbPool;
 use crate::utils::jwt::{generate_jwt, decode_jwt};
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
-use argon2::password_hash::{SaltString, PasswordHasher}; // Updated import for PasswordHasher
-use actix_web::http::header::{HeaderMap, AUTHORIZATION};
-use serde::Deserialize;
+use argon2::password_hash::{SaltString, PasswordHasher};
+use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 
 #[derive(Deserialize)]
@@ -29,7 +28,7 @@ pub async fn register_user(
     pool: web::Data<DbPool>,
     item: web::Json<RegisterUser>,
 ) -> impl Responder {
-    let conn = pool.get().expect("Failed to get DB connection");
+    let _conn = pool.get().expect("Failed to get DB connection");
 
     // Fix for hash_encoded usage
     let salt = SaltString::generate(&mut rand::thread_rng());
@@ -69,14 +68,14 @@ pub async fn login_user(
 
     // Fetch the user from the database based on the email
     let user: User = users
-        .filter(email.eq(&item.email)) // Use the email provided in the login request
-        .first(conn) // Use the connection to query the database
+        .filter(email.eq(&item.email)) 
+        .first(conn)
         .expect("Error fetching user");
 
     // Check if the provided password matches the stored hashed password
     let password_matches = Argon2::default()
-        .verify_password(item.password.as_bytes(), &PasswordHash::new(&user.password).unwrap())
-        .is_ok();
+    .verify_password(item.password.as_bytes(), &PasswordHash::new(user.password.as_ref().unwrap_or_else(|| &"".to_string())).unwrap())
+    .is_ok();
 
     // If the password doesn't match, return Unauthorized response
     if !password_matches {
@@ -84,24 +83,35 @@ pub async fn login_user(
     }
 
     // Generate a JWT token using the user's UUID (or a default if missing)
-    let token: String = match generate_jwt(user.uuid_user_id.unwrap_or_default()) {
+    let token: String = match generate_jwt(&user.uuid_user_id.unwrap_or_default()) {
         Ok(token) => token,
         Err(_) => return HttpResponse::InternalServerError().body("Error generating JWT"),
-    };    
+    };
 
     // Return the JWT token as a JSON response
     HttpResponse::Ok().json(token)
 }
 
-#[get("/auth/verify")]
-pub async fn verify_auth(auth_header: HeaderMap) -> impl Responder {
-    let token = auth_header.get(AUTHORIZATION).and_then(|h| h.to_str().ok()).unwrap_or_default();
+#[derive(Serialize)]
+pub struct VerifyAuthResponse {
+    pub message: String,
+}
 
-    let decoded_token = decode_jwt(token);
+#[get("/auth/verify")]
+pub async fn verify_auth(auth_header: Option<String>) -> impl Responder {
+    // Check if the Authorization header exists and extract the token
+    let token = auth_header.unwrap_or_default();
+
+    // Decode the JWT token
+    let decoded_token = decode_jwt(&token);
 
     match decoded_token {
-        Ok(_) => HttpResponse::Ok().body("Token valid"),
-        Err(_) => HttpResponse::Unauthorized().body("Invalid token"),
+        Ok(_) => HttpResponse::Ok().json(VerifyAuthResponse {
+            message: "Token valid".to_string(),
+        }),
+        Err(_) => HttpResponse::Unauthorized().json(VerifyAuthResponse {
+            message: "Invalid token".to_string(),
+        }),
     }
 }
 

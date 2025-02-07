@@ -3,17 +3,16 @@ use serde::{Deserialize, Serialize};
 use crate::schema::{users, places};
 use bigdecimal::BigDecimal;
 use chrono::NaiveDateTime;
-// use uuid::Uuid;
 
 #[derive(Queryable, Serialize, Deserialize, Debug)]
 #[diesel(table_name = users)]
 pub struct User {
     pub user_id: String,
     pub uuid_user_id: Option<String>,
-    pub first_name: String,
-    pub last_name: String,
-    pub email: String,
-    pub password: String,
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
+    pub email: Option<String>,
+    pub password: Option<String>,
     pub created_at: Option<NaiveDateTime>,
 }
 
