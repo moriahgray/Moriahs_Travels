@@ -2,7 +2,7 @@
 import { getFromStorage } from "./storage";
 
 // Get API URL from environment variable or fallback to default
-const API_URL = process.env.REACT_NATIVE_APP_API_URL || "http://travels_stack_travels_backend:8000"; 
+const API_URL = process.env.REACT_NATIVE_APP_API_URL || "http://travels_stack_travels_backend:8000";
 
 const getHeaders = async () => {
   const token = await getFromStorage("token");
