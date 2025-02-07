@@ -1,11 +1,11 @@
-use actix_web::{web, post, HttpResponse, Responder};
+use actix_web::{web, post, get, HttpResponse, Responder};
 use diesel::prelude::*;
 use crate::models::{User, NewUser};
 use crate::schema::users::dsl::*;
 use crate::utils::db::DbPool;
 use crate::utils::jwt::{generate_jwt, decode_jwt};
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
-use argon2::password_hash::SaltString;
+use argon2::password_hash::{SaltString, PasswordHasher}; // Updated import for PasswordHasher
 use actix_web::http::header::{HeaderMap, AUTHORIZATION};
 use serde::Deserialize;
 use uuid::Uuid;
@@ -31,26 +31,29 @@ pub async fn register_user(
 ) -> impl Responder {
     let conn = pool.get().expect("Failed to get DB connection");
 
-    // Hash the password using argon2
-    let hashed_password = argon2::hash_encoded(item.password.as_bytes(), SaltString::generate(&mut rand::thread_rng()).as_bytes(), &argon2::Config::default())
-        .unwrap();
+    // Fix for hash_encoded usage
+    let salt = SaltString::generate(&mut rand::thread_rng());
+    let hashed_password = Argon2::default()
+        .hash_password(item.password.as_bytes(), &salt)
+        .unwrap()
+        .to_string();
 
-    // Generate UUID for user_id
-    let uuid_user_id = Uuid::new_v4().to_string(); 
+    let generated_uuid = Uuid::new_v4().to_string();
 
     let new_user = NewUser {
-        user_id: uuid_user_id.clone(),  // This will be the user_id field
-        uuid_user_id: Some(uuid_user_id),  // This field stores the UUID
+        user_id: generated_uuid.clone(),
+        uuid_user_id: Some(generated_uuid),
         first_name: item.first_name.clone(),
         last_name: item.last_name.clone(),
         email: item.email.clone(),
         password: hashed_password,
     };
 
-    // Insert into the database
+    let mut conn = pool.get().expect("Failed to get DB connection");
+
     diesel::insert_into(users)
         .values(&new_user)
-        .execute(&conn)
+        .execute(&mut conn)
         .expect("Error inserting new user");
 
     HttpResponse::Created().body("User created successfully")
@@ -61,29 +64,32 @@ pub async fn login_user(
     pool: web::Data<DbPool>,
     item: web::Json<LoginUser>,
 ) -> impl Responder {
-    let conn = pool.get().expect("Failed to get DB connection");
+    // Get the connection from the pool
+    let conn = &mut pool.get().expect("Failed to get DB connection");
 
-    // Fetch user from the database
+    // Fetch the user from the database based on the email
     let user: User = users
-        .filter(email.eq(&item.email))
-        .first(&conn)
+        .filter(email.eq(&item.email)) // Use the email provided in the login request
+        .first(conn) // Use the connection to query the database
         .expect("Error fetching user");
 
-    // Verify the password using argon2
+    // Check if the provided password matches the stored hashed password
     let password_matches = Argon2::default()
         .verify_password(item.password.as_bytes(), &PasswordHash::new(&user.password).unwrap())
         .is_ok();
 
+    // If the password doesn't match, return Unauthorized response
     if !password_matches {
         return HttpResponse::Unauthorized().body("Invalid credentials");
     }
 
-    // Generate JWT using uuid_user_id
-    let token = match generate_jwt(user.uuid_user_id.unwrap_or_default()) {
+    // Generate a JWT token using the user's UUID (or a default if missing)
+    let token: String = match generate_jwt(user.uuid_user_id.unwrap_or_default()) {
         Ok(token) => token,
         Err(_) => return HttpResponse::InternalServerError().body("Error generating JWT"),
-    };
+    };    
 
+    // Return the JWT token as a JSON response
     HttpResponse::Ok().json(token)
 }
 
