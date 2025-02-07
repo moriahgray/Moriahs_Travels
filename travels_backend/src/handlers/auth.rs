@@ -1,6 +1,5 @@
-use actix_web::{get, post, web, HttpResponse, Responder};
+use actix_web::{web, HttpResponse, Responder};
 use diesel::prelude::*;
-use serde::{Deserialize, Serialize};
 use crate::models::{User, NewUser};
 use crate::schema::users::dsl::*;
 use crate::utils::db::DbPool;
@@ -10,21 +9,8 @@ use argon2::password_hash::SaltString;
 use actix_web::http::header::{HeaderMap, AUTHORIZATION};
 use uuid::Uuid;
 
-#[derive(Serialize, Deserialize)]
-struct Claims {
-    sub: String,
-    exp: usize,
-}
-
-impl Claims {
-    // Getter for the sub field
-    pub fn sub(&self) -> &str {
-        &self.sub
-    }
-}
-
 #[derive(Deserialize)]
-pub struct SignupRequest {
+pub struct RegisterUser {
     pub first_name: String,
     pub last_name: String,
     pub email: String,
@@ -32,147 +18,82 @@ pub struct SignupRequest {
 }
 
 #[derive(Deserialize)]
-pub struct LoginRequest {
+pub struct LoginUser {
     pub email: String,
     pub password: String,
 }
 
-#[derive(Insertable)]
-#[table_name = "users"]
-pub struct NewUser {
-    pub uuid_user_id: String,  // Updated to use UUID
-    pub first_name: String,
-    pub last_name: String,
-    pub email: String,
-    pub password: String,
-}
-
-#[post("/signup")]
-pub async fn signup(
+#[post("/auth/register")]
+pub async fn register_user(
     pool: web::Data<DbPool>,
-    user_data: web::Json<SignupRequest>,
+    item: web::Json<RegisterUser>,
 ) -> impl Responder {
-    let mut conn = match pool.get() {
-        Ok(conn) => conn,
-        Err(e) => return HttpResponse::InternalServerError().body(format!("Database connection error: {}", e)),
-    };
+    let conn = pool.get().expect("Failed to get DB connection");
 
-    // Generate a random UUID for the user ID
-    let uuid_user_id = Uuid::new_v4().to_string();  // Use UUID for user_id
+    let hashed_password = argon2::hash_encoded(item.password.as_bytes(), SaltString::generate(&mut rand::thread_rng()).as_bytes(), &argon2::Config::default())
+        .unwrap();
 
-    // Generate a salted hash for the password
-    let salt = SaltString::generate(&mut rand::thread_rng());
-    let hashed_password = match Argon2::default().hash_password(user_data.password.as_bytes(), &salt) {
-        Ok(hash) => hash.to_string(),
-        Err(_) => return HttpResponse::InternalServerError().body("Password hashing failed"),
-    };
+    let uuid_user_id = Uuid::new_v4().to_string(); // Generate UUID for user_id
 
-    // Create a new user struct
     let new_user = NewUser {
-        uuid_user_id,
-        first_name: user_data.first_name.clone(),
-        last_name: user_data.last_name.clone(),
-        email: user_data.email.clone(),
+        user_id: uuid_user_id.clone(),
+        uuid_user_id: Some(uuid_user_id),
+        first_name: item.first_name.clone(),
+        last_name: item.last_name.clone(),
+        email: item.email.clone(),
         password: hashed_password,
     };
 
-    // Insert new user into the database
-    match diesel::insert_into(users)
+    diesel::insert_into(users)
         .values(&new_user)
-        .execute(&mut conn) {
-        Ok(_) => (),
-        Err(err) => return HttpResponse::InternalServerError().body(format!("Failed to create user: {}", err)),
-    }
+        .execute(&conn)
+        .expect("Error inserting new user");
 
-    // Generate JWT token for the new user
-    let token = match generate_jwt(&new_user.uuid_user_id) {
-        Ok(token) => token,
-        Err(_) => return HttpResponse::InternalServerError().body("JWT generation failed"),
-    };
-
-    // Return response with success message and token
-    HttpResponse::Created().json(serde_json::json!({
-        "message": "User created successfully",
-        "token": token
-    }))
+    HttpResponse::Created().body("User created successfully")
 }
 
-#[post("/login")]
-pub async fn login(
+#[post("/auth/login")]
+pub async fn login_user(
     pool: web::Data<DbPool>,
-    credentials: web::Json<LoginRequest>,
+    item: web::Json<LoginUser>,
 ) -> impl Responder {
-    let mut conn = match pool.get() {
-        Ok(conn) => conn,
-        Err(_) => return HttpResponse::InternalServerError().body("Database connection error"),
-    };
+    let conn = pool.get().expect("Failed to get DB connection");
 
-    // Query the database to find the user with the provided email
-    let user_result = match users.filter(email.eq(&credentials.email))
-        .load::<User>(&mut conn) {
-        Ok(user) => user,
-        Err(_) => return HttpResponse::InternalServerError().body("Failed to query user"),
-    };
+    let user: User = users
+        .filter(email.eq(&item.email))
+        .first(&conn)
+        .expect("Error fetching user");
 
-    let user = match user_result.into_iter().next() {
-        Some(user) => user,
-        None => return HttpResponse::Unauthorized().json(serde_json::json!({
-            "error": "Invalid email or password"
-        })),
-    };
-
-    // Validate the password hash
-    let parsed_hash = match PasswordHash::new(&user.password) {
-        Ok(hash) => hash,
-        Err(_) => return HttpResponse::InternalServerError().body("Invalid stored password hash"),
-    };
-
-    let is_valid = Argon2::default()
-        .verify_password(credentials.password.as_bytes(), &parsed_hash)
+    let password_matches = Argon2::default()
+        .verify_password(item.password.as_bytes(), &PasswordHash::new(&user.password).unwrap())
         .is_ok();
 
-    if !is_valid {
-        return HttpResponse::Unauthorized().json(serde_json::json!({
-            "error": "Invalid email or password"
-        }));
+    if !password_matches {
+        return HttpResponse::Unauthorized().body("Invalid credentials");
     }
 
-    // Generate JWT token after successful login
-    let token = match generate_jwt(&user.uuid_user_id) {
+    let token = match generate_jwt(user.uuid_user_id.unwrap_or_default()) {
         Ok(token) => token,
-        Err(_) => return HttpResponse::InternalServerError().body("JWT generation failed"),
+        Err(_) => return HttpResponse::InternalServerError().body("Error generating JWT"),
     };
 
-    // Return response with success message and token
-    HttpResponse::Ok().json(serde_json::json!({
-        "message": "Login successful",
-        "token": token
-    }))
+    HttpResponse::Ok().json(token)
 }
 
 #[get("/auth/verify")]
-pub async fn verify_auth(auth_header: web::HeaderMap) -> impl Responder {
-    let token = match auth_header.get(AUTHORIZATION) {
-        Some(header_value) => header_value.to_str().unwrap_or("").replace("Bearer ", ""),
-        None => return HttpResponse::Unauthorized().json(serde_json::json!({
-            "error": "Authorization token missing"
-        })),
-    };
+pub async fn verify_auth(auth_header: HeaderMap) -> impl Responder {
+    let token = auth_header.get(AUTHORIZATION).and_then(|h| h.to_str().ok()).unwrap_or_default();
 
-    // Decode and verify the JWT token
-    match decode_jwt(&token) {
-        Ok(decoded_token) => HttpResponse::Ok().json(serde_json::json!({
-            "message": "Token is valid",
-            "user_id": decoded_token.claims.sub() // Using the getter method for sub
-        })),
-        Err(_) => HttpResponse::Unauthorized().json(serde_json::json!({
-            "error": "Invalid or expired token"
-        })),
+    let decoded_token = decode_jwt(token);
+
+    match decoded_token {
+        Ok(_) => HttpResponse::Ok().body("Token valid"),
+        Err(_) => HttpResponse::Unauthorized().body("Invalid token"),
     }
 }
 
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
-    cfg.service(signup)
-        .service(login)
+    cfg.service(register_user)
+        .service(login_user)
         .service(verify_auth);
 }

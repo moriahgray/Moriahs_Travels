@@ -59,7 +59,7 @@ pub async fn add_place(
         category: place_data.category.clone(),
         hotels: place_data.hotels.clone(),
         restaurants: place_data.restaurants.clone(),
-        image_uri: place_data.image_uri.clone(),
+        imageUri: place_data.image_uri.clone(),
         address: place_data.address.clone(),
     };
 

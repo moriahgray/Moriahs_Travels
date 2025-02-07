@@ -1,1 +1,0 @@
-fn(std::option::Option<actix_web::web::Header<{type error}>>) -> impl std::future::Future<Output = impl Responder> {verify_auth}

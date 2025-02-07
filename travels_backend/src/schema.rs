@@ -16,7 +16,7 @@ diesel::table! {
         hotels -> Nullable<Text>,
         restaurants -> Nullable<Text>,
         #[max_length = 255]
-        imageUri -> Nullable<Varchar>,
+        image_uri -> Nullable<Varchar>,
         #[max_length = 255]
         address -> Nullable<Varchar>,
         created_at -> Nullable<Datetime>,

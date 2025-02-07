@@ -1,13 +1,15 @@
-use diesel::prelude::*;
+use diesel::{Queryable, Insertable};
 use serde::{Deserialize, Serialize};
-use chrono::NaiveDateTime;
-use bigdecimal::BigDecimal;
 use crate::schema::{users, places};
+use bigdecimal::BigDecimal;
+use chrono::NaiveDateTime;
+// use uuid::Uuid;
 
-#[derive(Queryable, Selectable, Serialize, Deserialize, Debug)]
+#[derive(Queryable, Serialize, Deserialize, Debug)]
 #[diesel(table_name = users)]
 pub struct User {
-    pub uuid_user_id: String, // Using UUID for user_id
+    pub user_id: String,
+    pub uuid_user_id: Option<String>,
     pub first_name: String,
     pub last_name: String,
     pub email: String,
@@ -18,27 +20,27 @@ pub struct User {
 #[derive(Insertable, Serialize, Deserialize, Debug)]
 #[diesel(table_name = users)]
 pub struct NewUser {
-    pub uuid_user_id: String, // Using UUID for user_id
+    pub user_id: String,
+    pub uuid_user_id: Option<String>,
     pub first_name: String,
     pub last_name: String,
     pub email: String,
     pub password: String,
 }
 
-#[derive(Queryable, Selectable, Serialize, Deserialize, Debug)]
+#[derive(Queryable, Serialize, Deserialize, Debug)]
 #[diesel(table_name = places)]
 pub struct Place {
     pub id: i32,
     pub user_id: String,
     pub title: String,
     pub description: Option<String>,
-    pub latitude: MyBigDecimal, // Using MyBigDecimal for latitude
-    pub longitude: MyBigDecimal, // Using MyBigDecimal for longitude
+    pub latitude: BigDecimal,
+    pub longitude: BigDecimal,
     pub plans: Option<String>,
     pub category: Option<String>,
     pub hotels: Option<String>,
     pub restaurants: Option<String>,
-    #[diesel(column_name = "imageUri")]
     pub image_uri: Option<String>,
     pub address: Option<String>,
     pub created_at: Option<NaiveDateTime>,
@@ -50,13 +52,12 @@ pub struct NewPlace {
     pub user_id: String,
     pub title: String,
     pub description: Option<String>,
-    pub latitude: MyBigDecimal, // Using MyBigDecimal for latitude
-    pub longitude: MyBigDecimal, // Using MyBigDecimal for longitude
+    pub latitude: BigDecimal,
+    pub longitude: BigDecimal,
     pub plans: Option<String>,
     pub category: Option<String>,
     pub hotels: Option<String>,
     pub restaurants: Option<String>,
-    #[diesel(column_name = "imageUri")]
     pub image_uri: Option<String>,
     pub address: Option<String>,
 }

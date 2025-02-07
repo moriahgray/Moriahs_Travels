@@ -9,7 +9,7 @@ CREATE TABLE places (
     category VARCHAR(100),
     hotels TEXT,
     restaurants TEXT,
-    imageUri VARCHAR(255),
+    image_uri VARCHAR(255),
     address VARCHAR(255),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
