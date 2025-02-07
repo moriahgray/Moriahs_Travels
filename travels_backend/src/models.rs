@@ -7,7 +7,7 @@ use crate::schema::{users, places};
 #[derive(Queryable, Selectable, Serialize, Deserialize, Debug)]
 #[diesel(table_name = users)]
 pub struct User {
-    pub user_id: String,
+    pub uuid_user_id: String, // Using UUID for user_id
     pub first_name: String,
     pub last_name: String,
     pub email: String,
@@ -18,7 +18,7 @@ pub struct User {
 #[derive(Insertable, Serialize, Deserialize, Debug)]
 #[diesel(table_name = users)]
 pub struct NewUser {
-    pub user_id: String,
+    pub uuid_user_id: String, // Using UUID for user_id
     pub first_name: String,
     pub last_name: String,
     pub email: String,
@@ -32,8 +32,8 @@ pub struct Place {
     pub user_id: String,
     pub title: String,
     pub description: Option<String>,
-    pub latitude: BigDecimal,
-    pub longitude: BigDecimal,
+    pub latitude: MyBigDecimal, // Using MyBigDecimal for latitude
+    pub longitude: MyBigDecimal, // Using MyBigDecimal for longitude
     pub plans: Option<String>,
     pub category: Option<String>,
     pub hotels: Option<String>,
@@ -50,8 +50,8 @@ pub struct NewPlace {
     pub user_id: String,
     pub title: String,
     pub description: Option<String>,
-    pub latitude: BigDecimal,
-    pub longitude: BigDecimal,
+    pub latitude: MyBigDecimal, // Using MyBigDecimal for latitude
+    pub longitude: MyBigDecimal, // Using MyBigDecimal for longitude
     pub plans: Option<String>,
     pub category: Option<String>,
     pub hotels: Option<String>,
