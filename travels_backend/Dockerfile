@@ -25,10 +25,16 @@ FROM debian:bookworm-slim
 # Install MariaDB runtime libraries and client needed for database connection and debugging
 RUN apt-get update && apt-get install -y libmariadb3 mariadb-client ca-certificates && rm -rf /var/lib/apt/lists/*
 
+# Set the working directory inside the runtime container
+WORKDIR /app
+
 # Copy the compiled binary from the build image
 COPY --from=builder /usr/src/travels_backend/target/release/travels_backend /usr/local/bin/travels_backend
 
-# Expose port 8080 to access the backend
+# Copy the migration files from the build image
+COPY --from=builder /usr/src/travels_backend/migrations /app/migrations
+
+# Expose port 8000 to access the backend
 EXPOSE 8000
 
 # Command to run the backend
