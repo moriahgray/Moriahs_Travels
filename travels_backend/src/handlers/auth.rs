@@ -7,7 +7,7 @@ use crate::utils::db::DbPool;
 use crate::utils::jwt::{generate_jwt, decode_jwt};
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use argon2::password_hash::SaltString;
-use actix_web::http::header::{HeaderMap, AUTHORIZATION};
+use actix_web::http::header::AUTHORIZATION;
 
 #[derive(Serialize, Deserialize)]
 struct Claims {
@@ -142,6 +142,7 @@ pub async fn login(
 // Verify the token using JWT
 #[get("/auth/verify")]
 pub async fn verify_auth(auth_header: web::HeaderMap) -> impl Responder {
+    // Extract the 'Authorization' header from the HeaderMap
     let token = match auth_header.get(AUTHORIZATION) {
         Some(header_value) => header_value.to_str().unwrap_or("").replace("Bearer ", ""),
         None => return HttpResponse::Unauthorized().json(serde_json::json!({
