@@ -93,9 +93,9 @@ export const login = async (credentials) => {
 // Sign up a new user.
 export const signup = async (userData) => {
   try {
-    console.log("Signing up with data:", userData); // Log request data
+    console.log("Signing up with data:", userData);
 
-    const response = await fetch("http://travels_stack_travels_backend:8000/signup", {
+    const response = await fetch(`${API_URL}/signup`, { 
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -103,10 +103,10 @@ export const signup = async (userData) => {
       body: JSON.stringify(userData),
     });
 
-    console.log("Raw Response:", response); // Log raw response
+    console.log("Raw Response:", response);
 
     const data = await response.json();
-    console.log("Response Data:", data); // Log JSON response
+    console.log("Response Data:", data);
 
     if (!response.ok) {
       throw new Error(data?.message || "Failed to sign up.");
