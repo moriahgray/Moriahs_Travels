@@ -7,7 +7,7 @@ use crate::utils::db::DbPool;
 use crate::utils::jwt::{generate_jwt, decode_jwt};
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use argon2::password_hash::SaltString;
-use actix_web::http::header::Authorization;
+use actix_web::http::header::{HeaderMap, AUTHORIZATION};
 
 #[derive(Serialize, Deserialize)]
 struct Claims {
@@ -141,20 +141,19 @@ pub async fn login(
 
 // Verify the token using JWT
 #[get("/auth/verify")]
-pub async fn verify_auth(auth_header: web::Header<Authorization<String>>) -> impl Responder {
-    // Extract the token from the Authorization header, expected format: "Bearer <token>"
-    let token = match auth_header.into_inner().replace("Bearer ", "") {
-        token if token.is_empty() => return HttpResponse::Unauthorized().json(serde_json::json!({
+pub async fn verify_auth(auth_header: web::HeaderMap) -> impl Responder {
+    let token = match auth_header.get(AUTHORIZATION) {
+        Some(header_value) => header_value.to_str().unwrap_or("").replace("Bearer ", ""),
+        None => return HttpResponse::Unauthorized().json(serde_json::json!({
             "error": "Authorization token missing"
         })),
-        token => token,
     };
 
     // Decode and verify the JWT token
     match decode_jwt(&token) {
         Ok(decoded_token) => HttpResponse::Ok().json(serde_json::json!({
             "message": "Token is valid",
-            "user_id": decoded_token.claims.sub() // Use the getter method for sub
+            "user_id": decoded_token.claims.sub
         })),
         Err(_) => HttpResponse::Unauthorized().json(serde_json::json!({
             "error": "Invalid or expired token"
