@@ -8,8 +8,8 @@ const LOCAL_PORT = "8000";
 
 // Determine the correct API URL based on the platform
 const API_URL = Platform.OS === "android"
-  ? `http://${LOCAL_ANDROID}:${LOCAL_PORT}`  // Android emulator
-  : `http://${LOCAL_IP}:${LOCAL_PORT}`;  // iOS emulator or physical device
+  ? `http://${LOCAL_ANDROID}:${LOCAL_PORT}`
+  : `http://${LOCAL_IP}:${LOCAL_PORT}`;
 
 const getHeaders = async () => {
   const token = await getFromStorage("token");
