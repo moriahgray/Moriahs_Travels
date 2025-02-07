@@ -27,15 +27,17 @@ diesel::table! {
     users (user_id) {
         #[max_length = 6]
         user_id -> Varchar,
+        #[max_length = 36]
+        uuid_user_id -> Nullable<Char>,
         #[max_length = 100]
-        first_name -> Varchar,
+        first_name -> Nullable<Varchar>,
         #[max_length = 100]
-        last_name -> Varchar,
+        last_name -> Nullable<Varchar>,
         #[max_length = 255]
-        email -> Varchar,
+        email -> Nullable<Varchar>,
         #[max_length = 255]
-        password -> Varchar,
-        created_at -> Nullable<Datetime>,
+        password -> Nullable<Varchar>,
+        created_at -> Nullable<Timestamp>,
     }
 }
 
