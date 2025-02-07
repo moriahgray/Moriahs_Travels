@@ -4,15 +4,16 @@ use serde::{Deserialize, Serialize};
 use crate::models::{User, NewUser};
 use crate::schema::users::dsl::*;
 use crate::utils::db::DbPool;
+use crate::utils::jwt::{generate_jwt, decode_jwt};
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use argon2::password_hash::SaltString;
-use actix_web::http::header::AUTHORIZATION;
-use uuid::Uuid; // Import UUID crate
+use actix_web::http::header::{HeaderMap, AUTHORIZATION};
+use uuid::Uuid;
 
 #[derive(Serialize, Deserialize)]
 struct Claims {
-    sub: String,  // User ID (private field)
-    exp: usize,   // Expiration time
+    sub: String,
+    exp: usize,
 }
 
 impl Claims {
@@ -36,7 +37,16 @@ pub struct LoginRequest {
     pub password: String,
 }
 
-// Sign-up endpoint to create a new user
+#[derive(Insertable)]
+#[table_name = "users"]
+pub struct NewUser {
+    pub uuid_user_id: String,  // Updated to use UUID
+    pub first_name: String,
+    pub last_name: String,
+    pub email: String,
+    pub password: String,
+}
+
 #[post("/signup")]
 pub async fn signup(
     pool: web::Data<DbPool>,
@@ -47,8 +57,8 @@ pub async fn signup(
         Err(e) => return HttpResponse::InternalServerError().body(format!("Database connection error: {}", e)),
     };
 
-    // Generate UUID for user ID
-    let user_id = Uuid::new_v4().to_string(); // Generate a random UUID for the user ID
+    // Generate a random UUID for the user ID
+    let uuid_user_id = Uuid::new_v4().to_string();  // Use UUID for user_id
 
     // Generate a salted hash for the password
     let salt = SaltString::generate(&mut rand::thread_rng());
@@ -57,9 +67,9 @@ pub async fn signup(
         Err(_) => return HttpResponse::InternalServerError().body("Password hashing failed"),
     };
 
-    // Create a new user struct with the generated user_id
+    // Create a new user struct
     let new_user = NewUser {
-        user_id,  // Use the generated user_id
+        uuid_user_id,
         first_name: user_data.first_name.clone(),
         last_name: user_data.last_name.clone(),
         email: user_data.email.clone(),
@@ -75,7 +85,7 @@ pub async fn signup(
     }
 
     // Generate JWT token for the new user
-    let token = match generate_jwt(&new_user.user_id) {
+    let token = match generate_jwt(&new_user.uuid_user_id) {
         Ok(token) => token,
         Err(_) => return HttpResponse::InternalServerError().body("JWT generation failed"),
     };
@@ -87,7 +97,6 @@ pub async fn signup(
     }))
 }
 
-// Login endpoint to authenticate a user
 #[post("/login")]
 pub async fn login(
     pool: web::Data<DbPool>,
@@ -129,7 +138,7 @@ pub async fn login(
     }
 
     // Generate JWT token after successful login
-    let token = match generate_jwt(&user.user_id) {
+    let token = match generate_jwt(&user.uuid_user_id) {
         Ok(token) => token,
         Err(_) => return HttpResponse::InternalServerError().body("JWT generation failed"),
     };
@@ -141,10 +150,8 @@ pub async fn login(
     }))
 }
 
-// Verify the token using JWT
 #[get("/auth/verify")]
 pub async fn verify_auth(auth_header: web::HeaderMap) -> impl Responder {
-    // Extract the 'Authorization' header from the HeaderMap
     let token = match auth_header.get(AUTHORIZATION) {
         Some(header_value) => header_value.to_str().unwrap_or("").replace("Bearer ", ""),
         None => return HttpResponse::Unauthorized().json(serde_json::json!({
@@ -164,39 +171,6 @@ pub async fn verify_auth(auth_header: web::HeaderMap) -> impl Responder {
     }
 }
 
-// Function to generate JWT token
-pub fn generate_jwt(user_id: &str) -> Result<String, jsonwebtoken::errors::Error> {
-    let expiration = chrono::Utc::now()
-        .checked_add_signed(chrono::Duration::hours(24))
-        .expect("valid timestamp")
-        .timestamp() as usize;
-
-    let claims = Claims {
-        sub: user_id.to_owned(),
-        exp: expiration,
-    };
-
-    let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
-
-    encode(
-        &Header::default(),
-        &claims,
-        &EncodingKey::from_secret(secret.as_ref()),
-    )
-}
-
-// Function to decode and verify JWT token
-pub fn decode_jwt(token: &str) -> Result<jsonwebtoken::TokenData<Claims>, jsonwebtoken::errors::Error> {
-    let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
-    let validation = Validation::default();
-    decode::<Claims>(
-        token,
-        &DecodingKey::from_secret(secret.as_ref()),
-        &validation,
-    )
-}
-
-// Register routes with Actix Web
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(signup)
         .service(login)
