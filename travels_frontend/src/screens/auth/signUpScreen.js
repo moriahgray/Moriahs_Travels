@@ -35,6 +35,9 @@ export default function SignUpScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      
+    <Text style={styles.header}>Sign Up</Text>
+
       <TextInput
         placeholder="First Name"
         style={styles.input}
@@ -69,7 +72,13 @@ export default function SignUpScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, justifyContent: "center" },
+  container: { flex: 1, padding: 20, justifyContent: "Top" },
+  header: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 30,
+},
   input: { 
     borderWidth: 1, 
     borderColor: "#ccc", 

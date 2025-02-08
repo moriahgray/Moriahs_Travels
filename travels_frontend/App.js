@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { NavigationContainer } from "@react-navigation/native";
 import { Text } from "react-native"; 
-import AppNavigator from "./src/navigation/appNavigator";
+import AppNavigator from "./src/navigation/appNavigator"; // Import AppNavigator
 import { getToken, removeToken } from "./src/utils/storage";
 import jwtDecode from "jwt-decode";
 import API_URL from "./src/utils/api";
+import { NavigationContainer } from "@react-navigation/native"; // Only here, at the root level
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

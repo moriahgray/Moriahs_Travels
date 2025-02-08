@@ -1,6 +1,6 @@
 import { API_URL } from "@env";
 import { getFromStorage } from "./storage";
-import axios from "axios";  // Import axios
+import axios from "axios"; 
 
 // Get API URL from environment variable or fallback to default
 console.log("API URL:", API_URL);
@@ -21,7 +21,7 @@ export const getPlaces = async (category) => {
       headers: headers,
       params: { category },
     });
-    return response.data;  // Axios automatically parses the JSON response
+    return response.data;
   } catch (error) {
     console.error("Error fetching places:", error.response?.data || error.message);
     throw error;
@@ -33,7 +33,7 @@ export const addPlace = async (placeData) => {
   try {
     const headers = await getHeaders();
     const response = await axios.post(`${API_URL}/places`, placeData, { headers });
-    return response.data;  // Axios automatically parses the JSON response
+    return response.data;
   } catch (error) {
     console.error("Error adding place:", error.response?.data || error.message);
     throw error;
@@ -45,7 +45,7 @@ export const deletePlace = async (placeId) => {
   try {
     const headers = await getHeaders();
     const response = await axios.delete(`${API_URL}/places/${placeId}`, { headers });
-    return response.data;  // Axios automatically parses the JSON response
+    return response.data;
   } catch (error) {
     console.error("Error deleting place:", error.response?.data || error.message);
     throw error;
@@ -60,7 +60,7 @@ export const login = async (credentials) => {
         "Content-Type": "application/json",
       },
     });
-    return response.data;  // Axios automatically parses the JSON response
+    return response.data;
   } catch (error) {
     console.error("Error logging in:", error.response?.data || error.message);
     throw error;
@@ -82,7 +82,7 @@ export const signup = async (userData) => {
     // Log the response before returning
     console.log("Response:", response);
 
-    return response.data;  // Axios automatically parses the JSON response
+    return response.data;
   } catch (error) {
     console.error("Error signing up:", error.response?.data || error.message);
     throw error;

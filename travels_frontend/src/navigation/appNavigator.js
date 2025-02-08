@@ -1,65 +1,51 @@
-import React from "react";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { createStackNavigator } from "@react-navigation/stack";
-import WelcomeScreen from "../screens/auth/welcomeScreen";
-import LoginScreen from "../screens/auth/loginScreen";
-import SignUpScreen from "../screens/auth/signUpScreen";
-import MainMenuScreen from "../screens/main/mainMenuScreen";
-import TraveledTo from "../screens/main/traveledTo";
-import WantToTravel from "../screens/main/wantToTravel";
-import AddPlaceTraveledScreen from "../screens/main/addPlaceTraveledScreen";
-import AddPlaceWantScreen from "../screens/main/addPlaceWantScreen";
-import MapScreen from "../screens/main/mapScreen";
-import PlaceDetails from "../screens/main/placeDetails";
+import React from 'react';
+import { createStackNavigator } from '@react-navigation/stack';
+import MainMenuScreen from '../screens/main/mainMenuScreen';
+import TraveledTo from '../screens/main/traveledTo';
+import WantToTravel from '../screens/main/wantToTravel';
+import PlaceDetails from '../screens/main/placeDetails';
+import AddPlacesTraveledScreen from '../screens/main/addPlaceTraveledScreen';
+import AddPlacesWantScreen from '../screens/main/addPlaceWantScreen';
+import MapScreen from '../screens/main/mapScreen';
+import WelcomeScreen from '../screens/auth/welcomeScreen';
+import LoginScreen from '../screens/auth/loginScreen';
+import SignUpScreen from '../screens/auth/signUpScreen';
 
-// Create the stack and bottom tab navigators
-const Stack = createStackNavigator();
-const Tab = createBottomTabNavigator();
+// Main stack navigator for main app screens
+const MainStack = createStackNavigator();
 
-// Stack Navigator for each section
-function TraveledStack() {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="TraveledTo" component={TraveledTo} />
-      <Stack.Screen name="AddPlaceTraveled" component={AddPlaceTraveledScreen} />
-    </Stack.Navigator>
-  );
+// Auth stack navigator for authentication screens
+const AuthStack = createStackNavigator();
+
+function MainNavigator() {
+    return (
+        <MainStack.Navigator initialRouteName="MainMenuScreen">
+            <MainStack.Screen name="MainMenuScreen" component={MainMenuScreen} />
+            <MainStack.Screen name="TraveledTo" component={TraveledTo} />
+            <MainStack.Screen name="WantToTravel" component={WantToTravel} />
+            <MainStack.Screen name="PlaceDetails" component={PlaceDetails} />
+            <MainStack.Screen name="AddPlaceTraveledScreen" component={AddPlacesTraveledScreen} initialParams={{ category: 'traveled' }} />
+            <MainStack.Screen name="AddPlaceWantScreen" component={AddPlacesWantScreen} initialParams={{ category: 'wantToTravel' }} />
+            <MainStack.Screen name="MapScreen" component={MapScreen} />
+        </MainStack.Navigator>
+    );
 }
 
-function WantToTravelStack() {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="WantToTravel" component={WantToTravel} />
-      <Stack.Screen name="AddPlaceWant" component={AddPlaceWantScreen} />
-    </Stack.Navigator>
-  );
-}
-
-// Main Tab Navigator (for logged-in users)
-function MainMenuTabNavigator() {
-  return (
-    <Tab.Navigator>
-      <Tab.Screen name="Traveled" component={TraveledStack} />
-      <Tab.Screen name="WantToTravel" component={WantToTravelStack} />
-      <Tab.Screen name="Map" component={MapScreen} />
-    </Tab.Navigator>
-  );
+function AuthNavigator() {
+    return (
+        <AuthStack.Navigator initialRouteName="Welcome">
+            <AuthStack.Screen name="Welcome" component={WelcomeScreen} options={{ headerShown: false }} />
+            <AuthStack.Screen name="Login" component={LoginScreen} />
+            <AuthStack.Screen name="SignUp" component={SignUpScreen} />
+        </AuthStack.Navigator>
+    );
 }
 
 export default function AppNavigator({ isAuthenticated }) {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {isAuthenticated ? (
-        // If the user is authenticated, show the bottom tab navigator
-        <Stack.Screen name="MainMenu" component={MainMenuTabNavigator} />
-      ) : (
-        // If not authenticated, show the auth screens
+    return (
+        // No NavigationContainer here
         <>
-          <Stack.Screen name="Welcome" component={WelcomeScreen} />
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="SignUp" component={SignUpScreen} />
+            {isAuthenticated ? <MainNavigator /> : <AuthNavigator />}
         </>
-      )}
-    </Stack.Navigator>
-  );
+    );
 }
