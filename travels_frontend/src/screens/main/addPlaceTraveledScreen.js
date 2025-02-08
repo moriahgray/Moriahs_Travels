@@ -15,7 +15,7 @@ export default function AddPlaceTraveledScreen({ navigation }) {
 
   useEffect(() => {
     navigation.setOptions({
-      title: "Place She Visited",
+      title: "hPlace She Visited",
       headerBackTitle: "Back",
     });
   }, [navigation]);
