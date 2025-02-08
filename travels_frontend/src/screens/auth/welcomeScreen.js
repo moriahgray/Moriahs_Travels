@@ -1,17 +1,38 @@
 import React from "react";
-import { View, Text, Button, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
 export default function WelcomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to Moriah's Travels</Text>
-      <Button title="Log In" onPress={() => navigation.navigate("Login")} />
-      <Button title="Sign Up" onPress={() => navigation.navigate("SignUp")} />
+
+      <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+        <Text style={styles.linkText}>LOG IN</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
+        <Text style={styles.linkText}>SIGN UP</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center" },
-  title: { fontSize: 24, fontWeight: "bold", marginBottom: 20 },
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F5F5F5",
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+  linkText: {
+    fontSize: 16,
+    color: "#007BFF",
+    textDecorationLine: "underline", // Makes it underlined
+    marginVertical: 5, // Adds space between links
+  },
 });
