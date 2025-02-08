@@ -1,6 +1,7 @@
 use actix_web::{web, App, HttpServer, Responder, HttpResponse};
 use actix_cors::Cors;
 use diesel::prelude::*;
+use dotenvy::dotenv;
 
 mod diesel_types;
 mod handlers {
@@ -25,6 +26,9 @@ async fn health_check() -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    // Load the .env file to access environment variables
+    dotenv().ok();
+
     // Initialize the database connection pool
     let pool = init_pool();
 
@@ -46,7 +50,7 @@ async fn main() -> std::io::Result<()> {
             .configure(places_routes)
             .route("/health", web::get().to(health_check))
     })
-    .bind("0.0.0.0:8000")? 
+    .bind("0.0.0.0:8000")?
     .run()
     .await
 }
