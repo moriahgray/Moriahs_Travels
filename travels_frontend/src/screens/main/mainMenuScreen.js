@@ -1,17 +1,18 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { removeFromStorage } from '../../utils/storage';
 
 export default function MainMenuScreen({ navigation }) {
-    const handleLogout = () => {
-        signOut(auth)
-            .then(() => {
-                console.log('Logout successful');
-                navigation.replace('Welcome');
-            })
-            .catch(error => {
-                console.error('Error signing out:', error);
-                Alert.alert("Error", "Failed to log out. Please try again.");
-            });
+    const handleLogout = async () => {
+        try {
+            // Remove the token from storage
+            await removeFromStorage('jwtToken');
+            console.log('Logout successful');
+            navigation.replace('Welcome');
+        } catch (error) {
+            console.error('Error during logout:', error);
+            Alert.alert("Error", "Failed to log out. Please try again.");
+        }
     };
 
     return (

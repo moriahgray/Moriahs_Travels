@@ -3,7 +3,7 @@ import { View, TextInput, Button, StyleSheet, Alert, Text, ActivityIndicator } f
 import { login } from '../../utils/api';
 import { saveToStorage } from '../../utils/storage';
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen({ navigation, setIsAuthenticated }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -12,10 +12,11 @@ export default function LoginScreen({ navigation }) {
       setIsLoading(true);
       try {
           const data = await login({ email, password });
-  
+
           if (data.token) {
               await saveToStorage('jwtToken', data.token);
               console.log('Login successful');
+              setIsAuthenticated(true); 
               navigation.navigate('MainMenuScreen');
           } else {
               Alert.alert('Login Error', 'Invalid credentials. Please try again.');
