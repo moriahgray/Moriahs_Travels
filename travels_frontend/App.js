@@ -1,13 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
-import AuthNavigator from "./src/navigation/authNavigator";
-import MainNavigator from "./src/navigation/mainNavigator";
+import AppNavigator from "./src/navigation/appNavigatorNavigator";
 import { getToken, removeToken } from "./src/utils/storage";
 import jwtDecode from "jwt-decode";
 import API_URL from "./src/utils/api";
-
-const Stack = createStackNavigator();
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -19,8 +15,16 @@ export default function App() {
         console.log("Retrieved token:", token);
 
         if (token) {
-          const decoded = jwtDecode(token);
-          console.log("Decoded Token:", decoded);
+          let decoded;
+          try {
+            decoded = jwtDecode(token);
+            console.log("Decoded Token:", decoded);
+          } catch (e) {
+            console.error("Invalid token:", e);
+            await removeToken(); // Remove invalid token
+            setIsAuthenticated(false);
+            return;
+          }
 
           const currentTime = Date.now() / 1000;
           console.log("Current Time:", currentTime, "Token Expiry:", decoded.exp);
@@ -61,12 +65,14 @@ export default function App() {
           } else {
             console.log("Token expired locally, removing...");
             await removeToken();
+            setIsAuthenticated(false);
           }
         } else {
           console.log("No token found, user not authenticated.");
         }
       } catch (error) {
         console.error("Error verifying token:", error);
+        setIsAuthenticated(false);
       }
     };
 
@@ -75,13 +81,7 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {isAuthenticated ? (
-          <Stack.Screen name="MainNavigator" component={MainNavigator} />
-        ) : (
-          <Stack.Screen name="AuthNavigator" component={AuthNavigator} />
-        )}
-      </Stack.Navigator>
+      <AppNavigator isAuthenticated={isAuthenticated} />
     </NavigationContainer>
   );
 }
