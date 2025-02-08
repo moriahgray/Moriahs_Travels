@@ -6,9 +6,7 @@ export default function MainMenuScreen({ navigation }) {
         signOut(auth)
             .then(() => {
                 console.log('Logout successful');
-                
-                // Use `navigation.replace` to prevent the user from going back to the main app after logging out
-                navigation.replace('AuthNavigator', { screen: 'Welcome' }); 
+                navigation.replace('Welcome');
             })
             .catch(error => {
                 console.error('Error signing out:', error);
