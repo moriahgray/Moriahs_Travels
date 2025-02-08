@@ -1,30 +1,64 @@
-# Moriah's Travels - Frontend
+# **Frontend - Moriah's Travels**
 
-This is the **React Native + Expo** frontend for Moriah's Travels. It runs on **iOS, Android, and Web** using Expo.
-
----
-
-## 🚀 Features
-- **React Native + Expo** for cross-platform development
-- **JWT-based Authentication** for user login/signup
-- **React Navigation** for seamless app navigation
-- **Maps Support** (Platform-Specific: `react-native-maps` for mobile, WebView for web)
-- **Expo Image Picker** for uploading images
+## **Overview**
+The frontend for Moriah's Travels is a **React Native** application built with **Expo**. It supports **iOS, Android, and Web** with navigation, authentication, and location tracking.
 
 ---
 
-## 🛠️ Setup & Installation
+## **Setup Instructions**
+### **Prerequisites**
+- Install **Node.js** (Latest LTS)
+- Install **Expo CLI**:
+  ```sh
+  npm install -g expo-cli
+  ```
 
-### **1️⃣ Prerequisites**
-Make sure you have these installed before starting:
-- **Node.js** (>=16.x) & **npm** / **yarn**
-- **Expo CLI** (`npm install -g expo-cli`)
-- **Android Studio** (for Android Emulator)
-- **Xcode** (for iOS development, macOS only)
+### **Installation**
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/your-repo/moriahs-travels.git
+   cd moriahs-travels/frontend
+   ```
+
+2. Install dependencies:
+   ```sh
+   npm install
+   ```
+
+3. Set up environment variables in `.env`:
+   ```sh
+   API_URL=http://localhost:8000
+   ```
+
+4. Start the app:
+   ```sh
+   npm start
+   ```
+   This will launch Expo DevTools.
 
 ---
 
-### **2️⃣ Install Dependencies**
-```sh
-cd travels_frontend
-npm install
+## **Tech Stack**
+- **React Native (Expo)**
+- **React Navigation**
+- **React Native Web**
+- **Async Storage**
+- **JWT Authentication**
+
+---
+
+## **Running on Different Platforms**
+- **Android/iOS**: Use `expo go` on a real device or a simulator.
+- **Web**: Run:
+  ```sh
+  npm run web
+  ```
+
+---
+
+## **Features**
+- **Authentication**: Users can log in and sign up.
+- **Location Tracking**: View and add places.
+- **Navigation**: Smooth transition between screens.
+
+For more details, refer to the frontend source files.

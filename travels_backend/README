@@ -1,85 +1,79 @@
-Moriah's Travels - Backend
+# **Backend - Moriah's Travels**
 
-Overview
+## **Overview**
+The backend for Moriah's Travels is built with **Rust** using the **Actix Web framework**. It provides a REST API for user authentication, place management, and database interactions using **MySQL/MariaDB** with **Diesel ORM**.
 
-The backend for Moriah's Travels is built using Rust with the Actix Web framework. It provides API endpoints for user authentication, managing travel locations, and integrating with a MySQL/MariaDB database using Diesel ORM.
+---
 
-Tech Stack
+## **Setup Instructions**
+### **Prerequisites**
+- Install **Rust** and **Cargo**: [https://www.rust-lang.org/tools/install](https://www.rust-lang.org/tools/install)
+- Install **MySQL/MariaDB**: Ensure you have a running instance.
 
-Rust (Actix Web framework)
+### **Installation**
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/your-repo/moriahs-travels.git
+   cd moriahs-travels/backend
+   ```
 
-Diesel ORM (for database interactions)
+2. Set up environment variables by creating a `.env` file:
+   ```sh
+   DATABASE_URL=mysql://username:password@localhost/moriah_travels
+   SECRET_KEY=your_secret_key
+   ```
 
-MySQL/MariaDB (database)
+3. Install dependencies:
+   ```sh
+   cargo install diesel_cli --no-default-features --features mysql
+   cargo build
+   ```
 
-jsonwebtoken (for JWT authentication)
+4. Run database migrations:
+   ```sh
+   diesel setup
+   diesel migration run
+   ```
 
-dotenv (for environment variable management)
+5. Start the server:
+   ```sh
+   cargo run
+   ```
 
-Setup Instructions
+---
 
-Prerequisites
+## **API Endpoints**
+### **Authentication**
+- `POST /auth/register` → User registration
+- `POST /auth/login` → User login (returns JWT token)
+- `GET /auth/verify` → Token verification
 
-Install Rust (Latest stable version) from Rustup
+### **Places**
+- `GET /places` → Fetch all places
+- `POST /places` → Add a new place
+- `DELETE /places/{id}` → Delete a place
 
-Install Diesel CLI:
+---
 
-cargo install diesel_cli --no-default-features --features mysql
+## **Tech Stack**
+- **Rust**
+- **Actix Web**
+- **Diesel ORM**
+- **JWT Authentication**
+- **MySQL/MariaDB**
 
-MySQL or MariaDB database set up and running
+---
 
-Installation & Running
+## **Running Tests**
+Run tests using:
+```sh
+cargo test
+```
 
-Clone the repository and navigate to the backend directory:
+---
 
-git clone https://github.com/your-repo/moriahs-travels.git
-cd moriahs-travels/backend
+## **Troubleshooting**
+- If `diesel setup` fails, ensure MySQL is running and accessible.
+- If authentication fails, verify your `SECRET_KEY` and database settings.
 
-Set up the .env file with your database connection:
-
-DATABASE_URL=mysql://user:password@localhost/db_name
-JWT_SECRET=your-secret-key
-
-Run database migrations:
-
-diesel migration run
-
-Start the backend server:
-
-cargo run
-
-The server will start on http://localhost:8000
-
-API Endpoints
-
-Authentication
-
-POST /auth/login - Log in a user and receive a JWT token.
-
-POST /auth/register - Register a new user.
-
-GET /auth/verify - Verify authentication token.
-
-Places
-
-GET /places - Retrieve all places.
-
-POST /places - Add a new place.
-
-DELETE /places/:id - Delete a place.
-
-Database Schema
-
-The backend uses Diesel ORM for migrations and schema management. The database consists of the following tables:
-
-users - Stores user credentials and authentication details.
-
-places - Stores locations visited or planned.
-
-Contributing
-
-Feel free to submit a pull request or open an issue if you encounter any bugs or have feature suggestions.
-
-License
-
-This project is licensed under the MIT License.
+For more details, refer to the backend source files.
