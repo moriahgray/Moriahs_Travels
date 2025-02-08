@@ -1,44 +1,39 @@
-import { getToken } from "../../utils/storage";
+import React, { useState } from "react";
+import { View, Text, TextInput, Button } from "react-native";
+import { login } from "../../utils/api"; 
 
-// Function to login and get the JWT token
-export const login = async ({ email, password }) => {
-  try {
-    const response = await fetch("http://your-backend-url.com/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
-    
-    const data = await response.json();
-    
-    if (response.ok) {
-      return data; // Return the token
-    } else {
-      throw new Error(data.error || "Login failed");
+const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleLogin = async () => {
+    try {
+      const data = await login({ email, password });
+      console.log(data);
+    } catch (error) {
+      setError("Login failed. Please check your credentials.");
     }
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
+  };
+
+  return (
+    <View>
+      <Text>Login</Text>
+      <TextInput
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <TextInput
+        placeholder="Password"
+        value={password}
+        secureTextEntry
+        onChangeText={setPassword}
+      />
+      <Button title="Login" onPress={handleLogin} />
+      {error ? <Text>{error}</Text> : null}
+    </View>
+  );
 };
 
-// Example of an API call that requires token authentication
-export const fetchDataWithAuth = async () => {
-  try {
-    const token = await getToken(); // Retrieve the token
-    const response = await fetch("http://your-backend-url.com/protected", {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`, // Add the token to the headers
-      },
-    });
-    
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error fetching data with auth:", error);
-    throw error;
-  }
-};
+export default Login;

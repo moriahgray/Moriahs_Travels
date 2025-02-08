@@ -5,7 +5,7 @@ import AuthNavigator from "./src/navigation/authNavigator";
 import MainNavigator from "./src/navigation/mainNavigator";
 import { getToken, removeToken } from "./src/utils/storage";
 import jwtDecode from "jwt-decode";
-import API_URL from "./src/utils/api"; // Import backend URL
+import API_URL from "./src/utils/api";
 
 const Stack = createStackNavigator();
 
