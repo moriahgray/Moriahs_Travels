@@ -1,6 +1,7 @@
+import { API_URL } from "@env";
 import { getFromStorage } from "./storage";
-import { API_URL } from '@env';
 
+// Get API URL from environment variable or fallback to default
 console.log("API URL:", API_URL);
 
 const getHeaders = async () => {
@@ -85,6 +86,7 @@ export const login = async (credentials) => {
 // Sign up a new user.
 export const signup = async (userData) => {
   try {
+    // Log the JSON data that is about to be sent
     console.log("Signing up with data:", userData);
 
     const response = await fetch(`${API_URL}/auth/register`, { 
@@ -95,7 +97,8 @@ export const signup = async (userData) => {
       body: JSON.stringify(userData),
     });
 
-    console.log("Raw Response:", response);
+    // Log the response before returning
+    console.log("Response:", response);
     
     const data = await response.json();
     console.log("Response Data:", data);
