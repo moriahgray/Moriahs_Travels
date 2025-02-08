@@ -11,11 +11,16 @@ export default function SignUpScreen({ navigation }) {
 
   const handleSignUp = async () => {
     try {
-      const userData = { firstName, lastName, email, password };
-
+      const userData = {
+        first_name: firstName, // Change to snake_case
+        last_name: lastName,   // Change to snake_case
+        email,
+        password,
+      };
+  
       // Call signup API
       const response = await signup(userData);
-
+  
       // After successful sign-up, navigate to login screen
       if (response) {
         navigation.navigate("Login");
