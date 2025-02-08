@@ -1,5 +1,6 @@
 import { API_URL } from "@env";
 import { getFromStorage } from "./storage";
+import axios from "axios";  // Import axios
 
 // Get API URL from environment variable or fallback to default
 console.log("API URL:", API_URL);
@@ -15,15 +16,14 @@ const getHeaders = async () => {
 // Fetch places based on category.
 export const getPlaces = async (category) => {
   try {
-    const response = await fetch(`${API_URL}/places?category=${category}`, {
-      headers: await getHeaders(),
+    const headers = await getHeaders();
+    const response = await axios.get(`${API_URL}/places`, {
+      headers: headers,
+      params: { category },
     });
-    if (!response.ok) {
-      throw new Error(`Failed to fetch places: ${response.statusText}`);
-    }
-    return await response.json();
+    return response.data;  // Axios automatically parses the JSON response
   } catch (error) {
-    console.error("Error fetching places:", error);
+    console.error("Error fetching places:", error.response?.data || error.message);
     throw error;
   }
 };
@@ -31,17 +31,11 @@ export const getPlaces = async (category) => {
 // Add a new place.
 export const addPlace = async (placeData) => {
   try {
-    const response = await fetch(`${API_URL}/places`, {
-      method: "POST",
-      headers: await getHeaders(),
-      body: JSON.stringify(placeData),
-    });
-    if (!response.ok) {
-      throw new Error(`Failed to add place: ${response.statusText}`);
-    }
-    return await response.json();
+    const headers = await getHeaders();
+    const response = await axios.post(`${API_URL}/places`, placeData, { headers });
+    return response.data;  // Axios automatically parses the JSON response
   } catch (error) {
-    console.error("Error adding place:", error);
+    console.error("Error adding place:", error.response?.data || error.message);
     throw error;
   }
 };
@@ -49,16 +43,11 @@ export const addPlace = async (placeData) => {
 // Delete a place by ID.
 export const deletePlace = async (placeId) => {
   try {
-    const response = await fetch(`${API_URL}/places/${placeId}`, {
-      method: "DELETE",
-      headers: await getHeaders(),
-    });
-    if (!response.ok) {
-      throw new Error(`Failed to delete place: ${response.statusText}`);
-    }
-    return await response.json();
+    const headers = await getHeaders();
+    const response = await axios.delete(`${API_URL}/places/${placeId}`, { headers });
+    return response.data;  // Axios automatically parses the JSON response
   } catch (error) {
-    console.error("Error deleting place:", error);
+    console.error("Error deleting place:", error.response?.data || error.message);
     throw error;
   }
 };
@@ -66,19 +55,14 @@ export const deletePlace = async (placeId) => {
 // Log in a user.
 export const login = async (credentials) => {
   try {
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: "POST",
+    const response = await axios.post(`${API_URL}/auth/login`, credentials, {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(credentials),
     });
-    if (!response.ok) {
-      throw new Error(`Failed to log in: ${response.statusText}`);
-    }
-    return await response.json();
+    return response.data;  // Axios automatically parses the JSON response
   } catch (error) {
-    console.error("Error logging in:", error);
+    console.error("Error logging in:", error.response?.data || error.message);
     throw error;
   }
 };
@@ -89,27 +73,18 @@ export const signup = async (userData) => {
     // Log the JSON data that is about to be sent
     console.log("Signing up with data:", userData);
 
-    const response = await fetch(`${API_URL}/auth/register`, { 
-      method: "POST",
+    const response = await axios.post(`${API_URL}/auth/register`, userData, {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(userData),
     });
 
     // Log the response before returning
     console.log("Response:", response);
-    
-    const data = await response.json();
-    console.log("Response Data:", data);
 
-    if (!response.ok) {
-      throw new Error(data?.message || "Failed to sign up.");
-    }
-
-    return data;
+    return response.data;  // Axios automatically parses the JSON response
   } catch (error) {
-    console.error("Error signing up:", error);
+    console.error("Error signing up:", error.response?.data || error.message);
     throw error;
   }
 };
