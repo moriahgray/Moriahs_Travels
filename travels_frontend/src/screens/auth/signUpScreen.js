@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, TextInput, Button, StyleSheet } from "react-native";
-import { saveToken, getToken } from "../../utils/storage"; // Utility functions to manage token storage
-import { login } from "../../utils/api"; // API call function to login
+import { saveToken, getToken } from "../../utils/storage"; 
+import { login } from "../../utils/api";
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");

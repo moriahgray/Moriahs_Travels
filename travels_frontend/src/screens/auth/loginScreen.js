@@ -1,4 +1,4 @@
-import { getToken } from "./storage";
+import { getToken } from "../../utils/storage";
 
 // Function to login and get the JWT token
 export const login = async ({ email, password }) => {
