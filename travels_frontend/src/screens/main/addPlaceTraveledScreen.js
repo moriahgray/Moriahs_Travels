@@ -78,14 +78,14 @@ export default function AddPlaceTraveledScreen({ navigation }) {
       <TextInput placeholder="Hotels" style={styles.input} value={hotels} onChangeText={setHotels} />
       <TextInput placeholder="Restaurants" style={styles.input} value={restaurants} onChangeText={setRestaurants} />
 
-      {/* ✅ Input for adding plans */}
+      {/*Input for adding plans */}
       <TextInput placeholder="Add a plan" style={styles.input} value={currentPlan} onChangeText={setCurrentPlan} />
       <TouchableOpacity
         style={styles.addButton}
         onPress={() => {
           if (currentPlan.trim()) {
             setPlans([...plans, currentPlan.trim()]);
-            setCurrentPlan(""); // ✅ Clears input after adding
+            setCurrentPlan("");
           }
         }}
       >
@@ -105,12 +105,12 @@ export default function AddPlaceTraveledScreen({ navigation }) {
         keyExtractor={(item, index) => index.toString()}
       />
 
-      {/* ✅ Image Picker */}
+      {/* Image Picker */}
       <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
         <Text style={styles.imagePickerText}>Choose Image (Optional)</Text>
       </TouchableOpacity>
 
-      {/* ✅ Show Selected Image */}
+      {/* Show Selected Image */}
       {selectedImage && (
         <View style={styles.imageContainer}>
           <Image source={{ uri: selectedImage }} style={styles.image} />
