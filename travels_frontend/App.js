@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Text } from "react-native"; 
-import AppNavigator from "./src/navigation/appNavigator"; // Import AppNavigator
+import AppNavigator from "./src/navigation/appNavigator";
 import { getToken, removeToken } from "./src/utils/storage";
 import jwtDecode from "jwt-decode";
 import API_URL from "./src/utils/api";
-import { NavigationContainer } from "@react-navigation/native"; // Only here, at the root level
+import { NavigationContainer } from "@react-navigation/native"; 
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -83,14 +83,17 @@ export default function App() {
     checkAuth();
   }, []);
 
+  useEffect(() => {
+    console.log("Authentication state changed:", isAuthenticated);
+  }, [isAuthenticated]);
+
   if (loading) {
     return <Text>Loading...</Text>;
   }
 
   return (
     <NavigationContainer>
-      {/* AppNavigator handles the navigation based on authentication state */}
-      <AppNavigator isAuthenticated={isAuthenticated} />
+      <AppNavigator isAuthenticated={isAuthenticated} setIsAuthenticated={setIsAuthenticated} />
     </NavigationContainer>
   );
 }
