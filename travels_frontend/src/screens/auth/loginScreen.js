@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet } from "react-native";
 import { login } from "../../utils/api";
-import { saveToStorage } from "../../utils/storage";
+import { saveToStorage } from "../../utils/storage"; // Import saveToStorage
 
 const Login = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -22,7 +22,7 @@ const Login = ({ navigation }) => {
         await saveToStorage("userToken", data.token);
 
         // After successful login, navigate to the main app stack
-        navigation.replace("MainMenu");
+        navigation.replace("MainMenu"); // Use navigation.replace to avoid going back to the login screen
       } else {
         throw new Error("Token not received from server.");
       }
