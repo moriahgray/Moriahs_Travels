@@ -1,13 +1,14 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
-import { clearToken } from "../../utils/storage";
+import { clearToken } from "../../utils/storage"; 
 
 export default function MainMenuScreen({ navigation }) {
   const handleLogout = async () => {
     try {
-      await clearToken(); // Clear the JWT token from local storage
+      await clearToken(); 
       console.log("Logout successful");
-      navigation.navigate("AuthNavigator", { screen: "Welcome" });
+
+      navigation.navigate("Welcome");
     } catch (error) {
       console.error("Error signing out:", error);
       Alert.alert("Error", "Failed to log out. Please try again.");
