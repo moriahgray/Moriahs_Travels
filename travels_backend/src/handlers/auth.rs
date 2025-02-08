@@ -58,15 +58,23 @@ pub async fn register_user(
     };
 
     // Insert new user into the database
-    diesel::insert_into(users)
+    match diesel::insert_into(users)
         .values(&new_user)
         .execute(&mut conn)
-        .expect("Error inserting new user");
-
-    // Return success message as a JSON response
-    HttpResponse::Created()
-        .content_type("application/json")
-        .json(serde_json::json!({ "message": "User created successfully" }))
+    {
+        Ok(_) => {
+            println!("User created successfully in the database.");
+            HttpResponse::Created()
+                .content_type("application/json")
+                .json(serde_json::json!({ "message": "User created successfully" }))
+        }
+        Err(e) => {
+            eprintln!("Error inserting new user: {}", e);
+            HttpResponse::InternalServerError()
+                .content_type("application/json")
+                .json(serde_json::json!({ "error": "Failed to create user" }))
+        }
+    }
 }
 
 #[post("/auth/login")]
@@ -77,10 +85,15 @@ pub async fn login_user(
     let mut conn = pool.get().expect("Failed to get DB connection");
 
     // Fetch user based on the email
-    let user: User = users
+    let user: User = match users
         .filter(email.eq(&item.email))
         .first(&mut conn)
-        .expect("Error fetching user");
+    {
+        Ok(user) => user,
+        Err(_) => {
+            return HttpResponse::Unauthorized().body("Invalid credentials");
+        }
+    };
 
     // Verify password
     let password_matches = if let Some(stored_password) = &user.password {
