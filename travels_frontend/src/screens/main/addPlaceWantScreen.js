@@ -78,6 +78,32 @@ export default function AddPlaceWantScreen({ navigation }) {
       <TextInput placeholder="Hotels" style={styles.input} value={hotels} onChangeText={setHotels} />
       <TextInput placeholder="Restaurants" style={styles.input} value={restaurants} onChangeText={setRestaurants} />
 
+      <TextInput placeholder="Add a plan" style={styles.input} value={currentPlan} onChangeText={setCurrentPlan} />
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => {
+          if (currentPlan.trim()) {
+            setPlans([...plans, currentPlan.trim()]);
+            setCurrentPlan("");
+          }
+        }}
+      >
+        <Text style={styles.addButtonText}>Add Plan</Text>
+      </TouchableOpacity>
+
+      <FlatList
+        data={plans}
+        renderItem={({ item, index }) => (
+          <View style={styles.planItemContainer}>
+            <Text style={styles.planItem}>{`Plan ${index + 1}: ${item}`}</Text>
+            <TouchableOpacity onPress={() => setPlans(plans.filter((_, i) => i !== index))}>
+              <Text style={styles.deletePlanButton}>X</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        keyExtractor={(item, index) => index.toString()}
+      />
+
       <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
         <Text style={styles.imagePickerText}>Choose Image (Optional)</Text>
       </TouchableOpacity>
@@ -99,6 +125,11 @@ export default function AddPlaceWantScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#fff" },
   input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 5, padding: 10, marginBottom: 10 },
+  addButton: { backgroundColor: "#28A745", padding: 10, alignItems: "center", borderRadius: 5, marginBottom: 10 },
+  addButtonText: { color: "#fff", fontSize: 16 },
+  planItemContainer: { flexDirection: "row", alignItems: "center", marginBottom: 5 },
+  planItem: { fontSize: 16 },
+  deletePlanButton: { color: "red", marginLeft: 10, fontSize: 16 },
   imagePickerButton: {
     backgroundColor: "#007BFF",
     padding: 10,

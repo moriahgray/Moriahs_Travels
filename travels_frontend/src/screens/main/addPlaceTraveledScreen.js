@@ -15,12 +15,11 @@ export default function AddPlaceTraveledScreen({ navigation }) {
 
   useEffect(() => {
     navigation.setOptions({
-      title: "Add a Place She Visited",
+      title: "Place She Visited",
       headerBackTitle: "Back",
     });
   }, [navigation]);
 
-  // ✅ Open device's photo album and select an image
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
@@ -79,10 +78,39 @@ export default function AddPlaceTraveledScreen({ navigation }) {
       <TextInput placeholder="Hotels" style={styles.input} value={hotels} onChangeText={setHotels} />
       <TextInput placeholder="Restaurants" style={styles.input} value={restaurants} onChangeText={setRestaurants} />
 
+      {/* ✅ Input for adding plans */}
+      <TextInput placeholder="Add a plan" style={styles.input} value={currentPlan} onChangeText={setCurrentPlan} />
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => {
+          if (currentPlan.trim()) {
+            setPlans([...plans, currentPlan.trim()]);
+            setCurrentPlan(""); // ✅ Clears input after adding
+          }
+        }}
+      >
+        <Text style={styles.addButtonText}>Add Plan</Text>
+      </TouchableOpacity>
+
+      <FlatList
+        data={plans}
+        renderItem={({ item, index }) => (
+          <View style={styles.planItemContainer}>
+            <Text style={styles.planItem}>{`Plan ${index + 1}: ${item}`}</Text>
+            <TouchableOpacity onPress={() => setPlans(plans.filter((_, i) => i !== index))}>
+              <Text style={styles.deletePlanButton}>X</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        keyExtractor={(item, index) => index.toString()}
+      />
+
+      {/* ✅ Image Picker */}
       <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
         <Text style={styles.imagePickerText}>Choose Image (Optional)</Text>
       </TouchableOpacity>
 
+      {/* ✅ Show Selected Image */}
       {selectedImage && (
         <View style={styles.imageContainer}>
           <Image source={{ uri: selectedImage }} style={styles.image} />
@@ -100,6 +128,11 @@ export default function AddPlaceTraveledScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#fff" },
   input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 5, padding: 10, marginBottom: 10 },
+  addButton: { backgroundColor: "#28A745", padding: 10, alignItems: "center", borderRadius: 5, marginBottom: 10 },
+  addButtonText: { color: "#fff", fontSize: 16 },
+  planItemContainer: { flexDirection: "row", alignItems: "center", marginBottom: 5 },
+  planItem: { fontSize: 16 },
+  deletePlanButton: { color: "red", marginLeft: 10, fontSize: 16 },
   imagePickerButton: {
     backgroundColor: "#007BFF",
     padding: 10,
