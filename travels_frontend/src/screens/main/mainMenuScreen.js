@@ -8,7 +8,8 @@ export default function MainMenuScreen({ navigation }) {
       await clearToken(); 
       console.log("Logout successful");
 
-      navigation.navigate("Welcome");
+      // Reset navigation and navigate to Welcome screen
+      navigation.replace("Welcome");
     } catch (error) {
       console.error("Error signing out:", error);
       Alert.alert("Error", "Failed to log out. Please try again.");
@@ -19,12 +20,18 @@ export default function MainMenuScreen({ navigation }) {
     <View style={styles.container}>
       <Text style={styles.title}>Moriah's Travels</Text>
       <Text style={styles.subtitle}>Pick a link to see what is inside!</Text>
-      <TouchableOpacity style={styles.link} onPress={() => navigation.navigate("TraveledTo")}>
+
+      {/* The navigation here will now be within the nested tab structure */}
+      <TouchableOpacity style={styles.link} onPress={() => navigation.navigate("Traveled")}>
         <Text style={styles.linkText}>Where She Has Gone</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.link} onPress={() => navigation.navigate("WantToTravel")}>
         <Text style={styles.linkText}>Where She Will Go</Text>
       </TouchableOpacity>
+      <TouchableOpacity style={styles.link} onPress={() => navigation.navigate("Map")}>
+        <Text style={styles.linkText}>Map</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Log Out</Text>
       </TouchableOpacity>

@@ -8,29 +8,26 @@ const Login = ({ navigation }) => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = async () => {
-    try {
-      // Make login API call
-      const data = await login({ email, password });
-
-      // Log the received data to verify it contains the token
-      console.log("Received data:", data);
-
-      // Ensure token exists before saving it to storage
-      if (data && data.token) {
-        // Save the JWT token to AsyncStorage
-        await saveToStorage("userToken", data.token);
-
-        // After successful login, navigate to the main app stack
-        navigation.replace("MainMenuScreen");
-      } else {
-        throw new Error("Token not received from server.");
+    const handleLogin = async () => {
+      try {
+        const data = await login({ email, password });
+    
+        console.log("Received data:", data);
+    
+        if (data && data.token) {
+          await saveToStorage("userToken", data.token);
+    
+          // Instead of using reset, we can use navigate to go to the MainMenuScreen
+          navigation.navigate("MainMenuScreen");
+    
+        } else {
+          throw new Error("Token not received from server.");
+        }
+      } catch (error) {
+        console.error("Login failed:", error);
+        setError(error.message || "Login failed. Please check your credentials.");
       }
-    } catch (error) {
-      console.error("Login failed:", error);
-      setError(error.message || "Login failed. Please check your credentials.");
-    }
-  };
+    };
 
   return (
     <View style={styles.container}>

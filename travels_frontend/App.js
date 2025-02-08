@@ -1,19 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
-import MainMenuScreen from "./src/screens/main/mainMenuScreen";
-import TraveledTo from "./src/screens/main/traveledTo"; 
-import WantToTravel from "./src/screens/main/wantToTravel";
-import WelcomeScreen from "./src/screens/auth/welcomeScreen";
-
+import { Text } from "react-native"; 
+import AppNavigator from "./src/navigation/appNavigator";
 import { getToken, removeToken } from "./src/utils/storage";
 import jwtDecode from "jwt-decode";
 import API_URL from "./src/utils/api";
 
-const Stack = createStackNavigator();
-
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -24,12 +19,13 @@ export default function App() {
         if (token) {
           let decoded;
           try {
-            decoded = jwtDecode(token);
+            decoded = jwtDecode(token); 
             console.log("Decoded Token:", decoded);
           } catch (e) {
             console.error("Invalid token:", e);
             await removeToken();
             setIsAuthenticated(false);
+            setLoading(false);
             return;
           }
 
@@ -74,33 +70,27 @@ export default function App() {
           }
         } else {
           console.log("No token found, user not authenticated.");
+          setIsAuthenticated(false);
         }
       } catch (error) {
         console.error("Error verifying token:", error);
         setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
       }
     };
 
     checkAuth();
   }, []);
 
+  if (loading) {
+    return <Text>Loading...</Text>;
+  }
+
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {isAuthenticated ? (
-          <>
-            {/* Authenticated screens */}
-            <Stack.Screen name="MainMenuScreen" component={MainMenuScreen} />
-            <Stack.Screen name="TraveledTo" component={TraveledTo} />
-            <Stack.Screen name="WantToTravel" component={WantToTravel} />
-          </>
-        ) : (
-          <>
-            {/* Unauthenticated screens */}
-            <Stack.Screen name="Welcome" component={WelcomeScreen} />
-          </>
-        )}
-      </Stack.Navigator>
+      {/* AppNavigator handles the navigation based on authentication state */}
+      <AppNavigator isAuthenticated={isAuthenticated} />
     </NavigationContainer>
   );
 }
