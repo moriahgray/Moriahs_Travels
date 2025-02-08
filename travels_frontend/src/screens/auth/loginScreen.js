@@ -21,10 +21,11 @@ export default function LoginScreen({ navigation, setIsAuthenticated }) {
         setIsAuthenticated(true);
 
         // Reset navigation stack to MainMenuScreen
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "MainMenuScreen" }],
-        });
+        console.log("Current Navigation State:", navigation.getState());
+
+        navigation.navigate("MainMenuScreen");
+
+
       } else {
         Alert.alert("Login Error", "Invalid credentials. Please try again.");
       }
