@@ -1,22 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { View, FlatList, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
-import { fetchPlaces } from "../../utils/api";
+import { getPlaces } from "../../utils/api";
 
 export default function WantToTravel({ navigation }) {
   const [locations, setLocations] = useState([]);
 
   useEffect(() => {
+        navigation.setOptions({
+          title: "Where She Wants To Go",
+          headerBackTitle: "Back", 
+        });
     const loadPlaces = async () => {
       try {
-        // Fetch places with category "wantToTravel" from the database
-        const places = await fetchPlaces("wantToTravel");
+        // ✅ Use getPlaces instead of fetchPlaces
+        const places = await getPlaces("wantToTravel");
         console.log("Fetched places for WantToTravel:", places);
         setLocations(places);
       } catch (error) {
         console.error("Error fetching places:", error);
         Alert.alert("Error", "Failed to load places.");
       }
-    };
+    };    
 
     loadPlaces();
   }, []);

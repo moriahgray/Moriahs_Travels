@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { View, FlatList, Text, Button, StyleSheet, TouchableOpacity, Alert } from "react-native";
-import { fetchPlaces } from "../../utils/api";
+import { getPlaces } from "../../utils/api";
 
 export default function TraveledTo({ navigation }) {
   const [locations, setLocations] = useState([]);
 
   useEffect(() => {
+    navigation.setOptions({
+      title: "Where She Has Gone",
+      headerBackTitle: "Back", 
+    });
+
     const loadPlaces = async () => {
       try {
-        // Fetch places with category "traveled" from the database
-        const places = await fetchPlaces("traveled");
+        const places = await getPlaces("traveled");
         console.log("Fetched places for TraveledTo:", places);
         setLocations(places);
       } catch (error) {
@@ -19,7 +23,7 @@ export default function TraveledTo({ navigation }) {
     };
 
     loadPlaces();
-  }, []);
+  }, [navigation]);
 
   return (
     <View style={styles.container}>
