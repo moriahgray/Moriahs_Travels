@@ -1,8 +1,7 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, Alert, TouchableOpacity } from 'react-native';
-import { deletePlace } from '../../utils/api';
-// import { useNavigation } from '@react-navigation/native';
-import { MaterialIcons } from '@expo/vector-icons';
+import React, { useEffect } from "react";
+import { View, Text, StyleSheet, ScrollView, Image, Alert, TouchableOpacity } from "react-native";
+import { deletePlace } from "../../utils/api";
+import { MaterialIcons } from "@expo/vector-icons";
 
 export default function PlaceDetails({ route, navigation }) {
   const { place } = route.params;
@@ -24,26 +23,26 @@ export default function PlaceDetails({ route, navigation }) {
   // Delete the place and handle navigation
   const handleDelete = async () => {
     Alert.alert(
-      'Delete Place',
+      "Delete Place",
       `Are you sure you want to delete "${place.title}"?`,
       [
         {
-          text: 'Cancel',
-          style: 'cancel',
+          text: "Cancel",
+          style: "cancel",
         },
         {
-          text: 'Delete',
-          style: 'destructive',
+          text: "Delete",
+          style: "destructive",
           onPress: async () => {
             try {
               const result = await deletePlace(place.id);
               if (result) {
-                Alert.alert('Success', `${place.title} has been deleted.`);
+                Alert.alert("Success", `${place.title} has been deleted.`);
                 navigation.goBack();
               }
             } catch (error) {
-              console.error('Error deleting place:', error);
-              Alert.alert('Error', 'Failed to delete the place.');
+              console.error("Error deleting place:", error);
+              Alert.alert("Error", "Failed to delete the place.");
             }
           },
         },
@@ -53,7 +52,7 @@ export default function PlaceDetails({ route, navigation }) {
   };
 
   const handleShowOnMap = () => {
-    navigation.navigate('MapScreen', {
+    navigation.navigate("MapScreen", {
       latitude: place.latitude,
       longitude: place.longitude,
       name: place.title,
@@ -69,14 +68,14 @@ export default function PlaceDetails({ route, navigation }) {
 
         <Text style={styles.sectionTitle}>Plans</Text>
         <Text style={styles.content}>
-          {place.plans ? place.plans.split('; ').join('\n') : 'No plans available'}
+          {place.plans ? place.plans.split("; ").join("\n") : "No plans available"}
         </Text>
 
         <Text style={styles.sectionTitle}>Hotels</Text>
-        <Text style={styles.content}>{place.hotels || 'No hotel information available'}</Text>
+        <Text style={styles.content}>{place.hotels || "No hotel information available"}</Text>
 
         <Text style={styles.sectionTitle}>Restaurants</Text>
-        <Text style={styles.content}>{place.restaurants || 'No restaurant information available'}</Text>
+        <Text style={styles.content}>{place.restaurants || "No restaurant information available"}</Text>
 
         <TouchableOpacity style={styles.showOnMapButton} onPress={handleShowOnMap}>
           <Text style={styles.showOnMapText}>Show on Map</Text>
@@ -96,7 +95,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
   },
   description: {
@@ -105,7 +104,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginTop: 20,
     marginBottom: 5,
   },
@@ -113,19 +112,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   image: {
-    width: '100%',
+    width: "100%",
     height: 200,
     marginBottom: 10,
   },
   showOnMapButton: {
-    backgroundColor: '#28A745',
+    backgroundColor: "#28A745",
     padding: 10,
     borderRadius: 5,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 20,
   },
   showOnMapText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
   },
   deleteIcon: {
