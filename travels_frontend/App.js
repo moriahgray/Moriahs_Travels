@@ -9,16 +9,16 @@ import { NavigationContainer } from "@react-navigation/native";
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const navigationRef = useRef(null);  // ✅ Add navigation reference for better control
+  const navigationRef = useRef(null);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const token = await getToken();
-        console.log("🔍 Retrieved token:", token);
+        console.log("Retrieved token:", token);
 
         if (!token) {
-          console.log("🚫 No token found, user not authenticated.");
+          console.log("No token found, user not authenticated.");
           setIsAuthenticated(false);
           setLoading(false);
           return;
@@ -27,9 +27,9 @@ export default function App() {
         let decoded;
         try {
           decoded = jwtDecode(token);
-          console.log("📜 Decoded Token:", decoded);
+          console.log("Decoded Token:", decoded);
         } catch (e) {
-          console.error("❌ Invalid token:", e);
+          console.error("Invalid token:", e);
           await removeToken();
           setIsAuthenticated(false);
           setLoading(false);
@@ -40,7 +40,7 @@ export default function App() {
         console.log("⏳ Current Time:", currentTime, "| Token Expiry:", decoded.exp);
 
         if (decoded.exp > currentTime) {
-          console.log("✅ Token is valid locally. Checking with backend...");
+          console.log("Token is valid locally. Checking with backend...");
 
           const response = await fetch(`${API_URL}/auth/verify`, {
             method: "GET",
@@ -51,32 +51,32 @@ export default function App() {
           });
 
           const data = await response.json();
-          console.log("🔍 Backend Token Verification Response:", data);
+          console.log("Backend Token Verification Response:", data);
 
           if (response.ok) {
-            console.log("✅ Token is valid on the server. User is authenticated.");
+            console.log("Token is valid on the server. User is authenticated.");
             setIsAuthenticated(true);
 
             const timeUntilExpiry = (decoded.exp - currentTime) * 1000;
-            console.log(`⏳ Token will expire in ${timeUntilExpiry / 1000} seconds.`);
+            console.log(`Token will expire in ${timeUntilExpiry / 1000} seconds.`);
 
             setTimeout(async () => {
               setIsAuthenticated(false);
               await removeToken();
-              console.log("🗑️ Token expired and removed from storage.");
+              console.log("Token expired and removed from storage.");
             }, timeUntilExpiry);
           } else {
-            console.log("❌ Server rejected the token. Logging out...");
+            console.log("Server rejected the token. Logging out...");
             await removeToken();
             setIsAuthenticated(false);
           }
         } else {
-          console.log("❌ Token expired locally, removing...");
+          console.log("Token expired locally, removing...");
           await removeToken();
           setIsAuthenticated(false);
         }
       } catch (error) {
-        console.error("❌ Error verifying token:", error);
+        console.error("Error verifying token:", error);
         setIsAuthenticated(false);
       } finally {
         setLoading(false);
@@ -87,9 +87,9 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    console.log("🔄 Authentication state changed:", isAuthenticated);
+    console.log("Authentication state changed:", isAuthenticated);
     if (isAuthenticated && navigationRef.current) {
-      console.log("🚀 Navigating to MainMenuScreen...");
+      console.log("Navigating to MainMenuScreen...");
       navigationRef.current.reset({
         index: 0,
         routes: [{ name: "MainMenuScreen" }],
