@@ -1,9 +1,9 @@
 import React, { useLayoutEffect, useRef, useState } from "react";
-import { View, StyleSheet, Alert, TouchableOpacity, Text } from "react-native";
+import { View, StyleSheet, Alert, TouchableOpacity, Text, Platform } from "react-native";
 import MapView from "react-native-maps";
 
 const MapScreen = ({ route, navigation }) => {
-  const { latitude, longitude } = route.params;
+  const { latitude, longitude } = route.params || {};
 
   // Ensure that latitude and longitude are provided
   if (!latitude || !longitude) {
@@ -53,6 +53,17 @@ const MapScreen = ({ route, navigation }) => {
       });
     }
   };
+
+  // ✅ Handle Web Case: Show Message Instead of Map
+  if (Platform.OS === "web") {
+    return (
+      <View style={styles.webContainer}>
+        <Text style={styles.webMessage}>
+          Map view is not available on Web. Please use mobile for full functionality.
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -117,6 +128,18 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#333",
+  },
+  webContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F5F5F5",
+  },
+  webMessage: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#FF0000",
+    textAlign: "center",
   },
 });
 
