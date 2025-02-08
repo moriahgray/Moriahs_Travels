@@ -9,20 +9,11 @@ export default function SignUpScreen({ navigation }) {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Function to generate user_id
-  const generateUserId = (firstName, lastName) => {
-    const user_id = `${firstName.slice(0, 3)}${lastName.slice(0, 3)}`;
-    return user_id.toLowerCase(); // Ensure it is lowercase
-  };
-
   const handleSignUp = async () => {
     try {
-      // Generate user_id based on first 3 characters of first_name and last_name
-      const user_id = generateUserId(firstName, lastName);
+      const userData = { firstName, lastName, email, password };
 
-      const userData = { firstName, lastName, email, password, user_id };
-
-      // Call signup API and pass the generated user_id to the backend
+      // Call signup API and let the backend handle user_id generation
       const response = await signup(userData);
 
       // After successful sign-up, navigate to login or main screen

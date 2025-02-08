@@ -89,7 +89,7 @@ export const signup = async (userData) => {
   try {
     console.log("Signing up with data:", userData);
 
-    const response = await fetch(`${API_URL}/auth/register`, {  // Updated the route to match your backend
+    const response = await fetch(`${API_URL}/auth/register`, { 
       method: "POST",
       headers: {
         "Content-Type": "application/json",
