@@ -1,7 +1,7 @@
 import { getFromStorage } from "./storage";
 
 // Get API URL from environment variable or fallback to default
-const API_URL = process.env.REACT_NATIVE_APP_API_URL || "http://localhost:8000";  // Assuming you're running the backend locally
+const API_URL = process.env.REACT_NATIVE_APP_API_URL || "http://localhost:8000";
 
 console.log("API URL:", API_URL);
 
