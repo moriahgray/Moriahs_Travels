@@ -95,7 +95,7 @@ pub async fn login_user(
     {
         Ok(user) => user,
         Err(e) => {
-            error!("Error fetching user: {:?}", e);
+            error!("Error fetching user for email {}: {:?}", item.email, e);
             return HttpResponse::Unauthorized().body("Invalid credentials");
         }
     };
@@ -129,7 +129,8 @@ pub async fn login_user(
     };
 
     // Log the token (consider masking sensitive parts in production)
-    info!("Returning JWT token: {}", token);
+    let masked_token = &token[0..6]; // Mask the token for logs
+    info!("Returning JWT token: {}", masked_token);
 
     // Return the token as a JSON object
     HttpResponse::Ok().json(serde_json::json!({ "token": token }))
@@ -145,6 +146,14 @@ pub async fn verify_auth(auth_header: Option<String>) -> impl Responder {
     use log::{info, error};
 
     let token = auth_header.unwrap_or_default();
+
+    if token.is_empty() {
+        error!("No token provided.");
+        return HttpResponse::BadRequest().json(VerifyAuthResponse {
+            message: "No token provided".to_string(),
+        });
+    }
+
     info!("Received token for verification: {}", token);
 
     match decode_jwt(&token) {
