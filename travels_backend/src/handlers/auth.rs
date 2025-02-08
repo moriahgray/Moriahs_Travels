@@ -9,14 +9,14 @@ use argon2::password_hash::{SaltString, PasswordHasher};
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)] 
 pub struct RegisterUser {
+    pub user_id: String,
     pub first_name: String,
     pub last_name: String,
     pub email: String,
     pub password: String,
 }
-
 #[derive(Deserialize)]
 pub struct LoginUser {
     pub email: String,
@@ -28,33 +28,35 @@ pub async fn register_user(
     pool: web::Data<DbPool>,
     item: web::Json<RegisterUser>,
 ) -> impl Responder {
-    let _conn = pool.get().expect("Failed to get DB connection");
+    let mut conn = pool.get().expect("Failed to get DB connection");
 
-    // Fix for hash_encoded usage
+    // Hash the password
     let salt = SaltString::generate(&mut rand::thread_rng());
     let hashed_password = Argon2::default()
         .hash_password(item.password.as_bytes(), &salt)
         .unwrap()
         .to_string();
 
-    let generated_uuid = Uuid::new_v4().to_string();
+    // Generate the uuid_user_id on the backend (as UUID formatted string)
+    let generated_uuid_user_id = Some(Uuid::new_v4().to_string());
 
+    // Create a new user struct with uuid_user_id
     let new_user = NewUser {
-        user_id: generated_uuid.clone(),
-        uuid_user_id: Some(generated_uuid),
+        user_id: item.user_id.clone(), 
+        uuid_user_id: generated_uuid_user_id,
         first_name: item.first_name.clone(),
         last_name: item.last_name.clone(),
         email: item.email.clone(),
         password: hashed_password,
     };
 
-    let mut conn = pool.get().expect("Failed to get DB connection");
-
+    // Insert the new user into the database
     diesel::insert_into(users)
-        .values(&new_user)
-        .execute(&mut conn)
-        .expect("Error inserting new user");
+    .values(&new_user)
+    .execute(&mut conn)
+    .expect("Error inserting new user");
 
+    // Return a response indicating successful user creation
     HttpResponse::Created().body("User created successfully")
 }
 
