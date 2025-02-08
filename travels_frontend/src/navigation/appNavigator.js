@@ -16,6 +16,7 @@ const Stack = createStackNavigator();
 export default function AppNavigator({ isAuthenticated }) {
   return (
     <Stack.Navigator initialRouteName={isAuthenticated ? "MainMenuScreen" : "Welcome"}>
+      {/* Routes for authenticated users */}
       {isAuthenticated ? (
         <>
           <Stack.Screen name="MainMenuScreen" component={MainMenuScreen} />
@@ -27,8 +28,13 @@ export default function AppNavigator({ isAuthenticated }) {
           <Stack.Screen name="MapScreen" component={MapScreen} />
         </>
       ) : (
+        // Routes for unauthenticated users
         <>
-          <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ headerShown: false }} />
+          <Stack.Screen 
+            name="Welcome" 
+            component={WelcomeScreen} 
+            options={{ headerShown: false }} 
+          />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="SignUp" component={SignUpScreen} />
         </>

@@ -14,7 +14,7 @@ export default function LoginScreen({ navigation }) {
             if (data.token) {
                 await saveToStorage('jwtToken', data.token);
                 console.log('Login successful');
-                navigation.replace('MainMenuScreen');
+                navigation.navigate('MainMenuScreen');
             } else {
                 Alert.alert('Login Error', 'Invalid credentials. Please try again.');
             }
