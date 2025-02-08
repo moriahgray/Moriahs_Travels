@@ -38,9 +38,7 @@ async fn main() -> std::io::Result<()> {
 
     // Test the database connection
     let mut conn = pool.get().expect("Failed to get database connection");
-    match diesel::sql_query("SELECT 1")
-        .execute(&mut conn)
-    {
+    match diesel::sql_query("SELECT 1").execute(&mut conn) {
         Ok(_) => info!("Database connection successful"),
         Err(e) => error!("Database connection test failed: {}", e),
     };
@@ -55,6 +53,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(pool.clone()))
             .configure(auth_routes)
             .configure(places_routes)
+            .route("/", web::get().to(health_check))
             .route("/health", web::get().to(health_check))
     })
     .bind("0.0.0.0:8000")?
