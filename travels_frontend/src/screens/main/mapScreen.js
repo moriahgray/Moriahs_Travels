@@ -1,11 +1,14 @@
 import React, { useLayoutEffect, useRef, useState } from "react";
 import { View, StyleSheet, Alert, TouchableOpacity, Text, Platform } from "react-native";
 import MapView from "react-native-maps";
+import MapScreenWeb from "./mapScreenWeb";
 
 const MapScreen = ({ route, navigation }) => {
-  const { latitude, longitude } = route.params || {};
+  if (Platform.OS === "web") {
+    return <MapScreenWeb route={route} />;
+  }
 
-  // Ensure that latitude and longitude are provided
+  const { latitude, longitude } = route.params || {};
   if (!latitude || !longitude) {
     Alert.alert("Error", "Invalid location data");
     return null;
@@ -20,50 +23,27 @@ const MapScreen = ({ route, navigation }) => {
 
   const zoomInHandler = () => {
     if (mapRef.current) {
-      setZoomLevel((prevZoom) => {
-        const newZoom = prevZoom / 2;
-        mapRef.current.animateToRegion(
-          {
-            latitude,
-            longitude,
-            latitudeDelta: newZoom,
-            longitudeDelta: newZoom,
-          },
-          1000
-        );
-        return newZoom;
-      });
+      setZoomLevel((prevZoom) => prevZoom / 2);
+      mapRef.current.animateToRegion({
+        latitude,
+        longitude,
+        latitudeDelta: zoomLevel / 2,
+        longitudeDelta: zoomLevel / 2,
+      }, 1000);
     }
   };
 
   const zoomOutHandler = () => {
     if (mapRef.current) {
-      setZoomLevel((prevZoom) => {
-        const newZoom = prevZoom * 2;
-        mapRef.current.animateToRegion(
-          {
-            latitude,
-            longitude,
-            latitudeDelta: newZoom,
-            longitudeDelta: newZoom,
-          },
-          1000
-        );
-        return newZoom;
-      });
+      setZoomLevel((prevZoom) => prevZoom * 2);
+      mapRef.current.animateToRegion({
+        latitude,
+        longitude,
+        latitudeDelta: zoomLevel * 2,
+        longitudeDelta: zoomLevel * 2,
+      }, 1000);
     }
   };
-
-  // ✅ Handle Web Case: Show Message Instead of Map
-  if (Platform.OS === "web") {
-    return (
-      <View style={styles.webContainer}>
-        <Text style={styles.webMessage}>
-          Map view is not available on Web. Please use mobile for full functionality.
-        </Text>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
@@ -76,21 +56,7 @@ const MapScreen = ({ route, navigation }) => {
           latitudeDelta: zoomLevel,
           longitudeDelta: zoomLevel,
         }}
-        onMapReady={() => {
-          if (mapRef.current) {
-            mapRef.current.animateToRegion(
-              {
-                latitude,
-                longitude,
-                latitudeDelta: zoomLevel,
-                longitudeDelta: zoomLevel,
-              },
-              1000
-            );
-          }
-        }}
       />
-      {/* Zoom controls */}
       <View style={styles.zoomControls}>
         <TouchableOpacity onPress={zoomInHandler} style={styles.zoomButton}>
           <Text style={styles.zoomText}>+</Text>
@@ -128,18 +94,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#333",
-  },
-  webContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F5F5F5",
-  },
-  webMessage: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#FF0000",
-    textAlign: "center",
   },
 });
 
