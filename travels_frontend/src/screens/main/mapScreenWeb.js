@@ -1,9 +1,9 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { WebView } from "react-native-webview"; // For Expo & RN CLI
+import { WebView } from "react-native-webview";
 
 export default function MapScreenWeb({ route }) {
-  const { latitude, longitude } = route.params || { latitude: 37.7749, longitude: -122.4194 }; // Default: San Francisco
+  const { latitude, longitude } = route.params || { latitude: 37.7749, longitude: -122.4194 }; 
 
   return (
     <View style={styles.container}>

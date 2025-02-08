@@ -1,14 +1,23 @@
 import React, { useLayoutEffect, useRef, useState } from "react";
 import { View, StyleSheet, Alert, TouchableOpacity, Text, Platform } from "react-native";
-import MapView from "react-native-maps";
-import MapScreenWeb from "./mapScreenWeb";
+
+// Import react-native-maps ONLY if it's NOT web
+let MapView;
+if (Platform.OS !== "web") {
+  MapView = require("react-native-maps").default;
+}
+
+// Import Web-friendly map
+import MapScreenWeb from "./mapScreenWeb"; // ✅ Web-friendly alternative
 
 const MapScreen = ({ route, navigation }) => {
+  const { latitude, longitude } = route.params || {};
+
+  // ✅ If running on Web, use `mapScreenWeb.js`
   if (Platform.OS === "web") {
     return <MapScreenWeb route={route} />;
   }
 
-  const { latitude, longitude } = route.params || {};
   if (!latitude || !longitude) {
     Alert.alert("Error", "Invalid location data");
     return null;
