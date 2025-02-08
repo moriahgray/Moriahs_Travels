@@ -1,8 +1,7 @@
-// import { Platform } from "react-native";
 import { getFromStorage } from "./storage";
 
 // Get API URL from environment variable or fallback to default
-const API_URL = process.env.REACT_NATIVE_APP_API_URL || "http://travels_stack_travels_backend:8000";
+const API_URL = process.env.REACT_NATIVE_APP_API_URL || "http://localhost:8000";  // Assuming you're running the backend locally
 
 console.log("API URL:", API_URL);
 
@@ -90,7 +89,7 @@ export const signup = async (userData) => {
   try {
     console.log("Signing up with data:", userData);
 
-    const response = await fetch(`${API_URL}/signup`, { 
+    const response = await fetch(`${API_URL}/auth/register`, {  // Updated the route to match your backend
       method: "POST",
       headers: {
         "Content-Type": "application/json",
