@@ -11,41 +11,28 @@ import WelcomeScreen from '../screens/auth/welcomeScreen';
 import LoginScreen from '../screens/auth/loginScreen';
 import SignUpScreen from '../screens/auth/signUpScreen';
 
-// Main stack navigator for main app screens
-const MainStack = createStackNavigator();
-
-// Auth stack navigator for authentication screens
-const AuthStack = createStackNavigator();
-
-function MainNavigator() {
-    return (
-        <MainStack.Navigator initialRouteName="MainMenuScreen">
-            <MainStack.Screen name="MainMenuScreen" component={MainMenuScreen} />
-            <MainStack.Screen name="TraveledTo" component={TraveledTo} />
-            <MainStack.Screen name="WantToTravel" component={WantToTravel} />
-            <MainStack.Screen name="PlaceDetails" component={PlaceDetails} />
-            <MainStack.Screen name="AddPlaceTraveledScreen" component={AddPlacesTraveledScreen} initialParams={{ category: 'traveled' }} />
-            <MainStack.Screen name="AddPlaceWantScreen" component={AddPlacesWantScreen} initialParams={{ category: 'wantToTravel' }} />
-            <MainStack.Screen name="MapScreen" component={MapScreen} />
-        </MainStack.Navigator>
-    );
-}
-
-function AuthNavigator() {
-    return (
-        <AuthStack.Navigator initialRouteName="Welcome">
-            <AuthStack.Screen name="Welcome" component={WelcomeScreen} options={{ headerShown: false }} />
-            <AuthStack.Screen name="Login" component={LoginScreen} />
-            <AuthStack.Screen name="SignUp" component={SignUpScreen} />
-        </AuthStack.Navigator>
-    );
-}
+const Stack = createStackNavigator();
 
 export default function AppNavigator({ isAuthenticated }) {
-    return (
-        // No NavigationContainer here
+  return (
+    <Stack.Navigator initialRouteName={isAuthenticated ? "MainMenuScreen" : "Welcome"}>
+      {isAuthenticated ? (
         <>
-            {isAuthenticated ? <MainNavigator /> : <AuthNavigator />}
+          <Stack.Screen name="MainMenuScreen" component={MainMenuScreen} />
+          <Stack.Screen name="TraveledTo" component={TraveledTo} />
+          <Stack.Screen name="WantToTravel" component={WantToTravel} />
+          <Stack.Screen name="PlaceDetails" component={PlaceDetails} />
+          <Stack.Screen name="AddPlaceTraveledScreen" component={AddPlacesTraveledScreen} initialParams={{ category: 'traveled' }} />
+          <Stack.Screen name="AddPlaceWantScreen" component={AddPlacesWantScreen} initialParams={{ category: 'wantToTravel' }} />
+          <Stack.Screen name="MapScreen" component={MapScreen} />
         </>
-    );
+      ) : (
+        <>
+          <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="SignUp" component={SignUpScreen} />
+        </>
+      )}
+    </Stack.Navigator>
+  );
 }
