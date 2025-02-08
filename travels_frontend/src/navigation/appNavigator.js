@@ -16,16 +16,15 @@ const Stack = createStackNavigator();
 export default function AppNavigator({ isAuthenticated }) {
   return (
     <Stack.Navigator initialRouteName={isAuthenticated ? "MainMenuScreen" : "Welcome"}>
-      {/* Routes for authenticated users */}
-      {isAuthenticated ? (
-        <>
-          <Stack.Screen name="MainMenuScreen" component={MainMenuScreen} />
-          <Stack.Screen name="TraveledTo" component={TraveledTo} />
-          <Stack.Screen name="WantToTravel" component={WantToTravel} />
-          <Stack.Screen name="PlaceDetails" component={PlaceDetails} />
-          <Stack.Screen name="AddPlaceTraveledScreen" component={AddPlacesTraveledScreen} initialParams={{ category: 'traveled' }} />
-          <Stack.Screen name="AddPlaceWantScreen" component={AddPlacesWantScreen} initialParams={{ category: 'wantToTravel' }} />
-          <Stack.Screen name="MapScreen" component={MapScreen} />
+    {isAuthenticated ? (
+      <>
+        <Stack.Screen name="MainMenuScreen" component={MainMenuScreen} />
+        <Stack.Screen name="TraveledTo" component={TraveledTo} />
+        <Stack.Screen name="WantToTravel" component={WantToTravel} />
+        <Stack.Screen name="PlaceDetails" component={PlaceDetails} />
+        <Stack.Screen name="AddPlaceTraveledScreen" component={AddPlacesTraveledScreen} initialParams={{ category: 'traveled' }} />
+        <Stack.Screen name="AddPlaceWantScreen" component={AddPlacesWantScreen} initialParams={{ category: 'wantToTravel' }} />
+        <Stack.Screen name="MapScreen" component={MapScreen} />
         </>
       ) : (
         // Routes for unauthenticated users

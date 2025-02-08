@@ -9,24 +9,24 @@ export default function LoginScreen({ navigation }) {
     const [isLoading, setIsLoading] = useState(false);
 
     const handleLogin = async () => {
-        setIsLoading(true);
-        try {
-            const data = await login({ email, password });
-
-            if (data.token) {
-                await saveToStorage('jwtToken', data.token);
-                console.log('Login successful');
-                navigation.navigate('MainMenuScreen');
-            } else {
-                Alert.alert('Login Error', 'Invalid credentials. Please try again.');
-            }
-        } catch (error) {
-            console.error('Error during login:', error);
-            Alert.alert('Login Error', error.message || 'Something went wrong. Please try again later.');
-        } finally {
-            setIsLoading(false);
-        }
-    };
+      setIsLoading(true);
+      try {
+          const data = await login({ email, password });
+  
+          if (data.token) {
+              await saveToStorage('jwtToken', data.token);
+              console.log('Login successful');
+              navigation.navigate('MainMenuScreen');
+          } else {
+              Alert.alert('Login Error', 'Invalid credentials. Please try again.');
+          }
+      } catch (error) {
+          console.error('Error during login:', error);
+          Alert.alert('Login Error', error.message || 'Something went wrong. Please try again later.');
+      } finally {
+          setIsLoading(false);
+      }
+  };
 
     return (
         <View style={styles.container}>
