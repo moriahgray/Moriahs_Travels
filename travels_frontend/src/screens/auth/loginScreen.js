@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet } from "react-native";
-import { login } from "../../utils/api";
-import { saveToStorage } from "../../utils/storage"; // Import saveToStorage
+import { login } from "../../utils/api"; 
+import { saveToStorage } from "../../utils/storage";
 
 const Login = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -13,13 +13,22 @@ const Login = ({ navigation }) => {
       // Make login API call
       const data = await login({ email, password });
 
-      // Save the JWT token to AsyncStorage
-      await saveToStorage("userToken", data.token); // Save the token to storage
+      // Log the received data to verify it contains the token
+      console.log("Received data:", data);
 
-      // After successful login, navigate to the home/dashboard screen
-      navigation.navigate("Home"); // Adjust this to your home screen route name
+      // Ensure token exists before saving it to storage
+      if (data && data.token) {
+        // Save the JWT token to AsyncStorage
+        await saveToStorage("userToken", data.token);
+
+        // After successful login, navigate to the home/dashboard screen
+        navigation.navigate("Home");
+      } else {
+        throw new Error("Token not received from server.");
+      }
     } catch (error) {
-      setError("Login failed. Please check your credentials.");
+      console.error("Login failed:", error);
+      setError(error.message || "Login failed. Please check your credentials.");
     }
   };
 

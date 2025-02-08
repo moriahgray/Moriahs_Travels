@@ -131,7 +131,8 @@ pub async fn login_user(
     // Log the token (consider masking sensitive parts in production)
     info!("Returning JWT token: {}", token);
 
-    HttpResponse::Ok().json(token)
+    // Return the token as a JSON object
+    HttpResponse::Ok().json(serde_json::json!({ "token": token }))
 }
 
 #[derive(Serialize)]
