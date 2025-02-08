@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet } from "react-native";
-import { login } from "../../utils/api"; 
+import { login } from "../../utils/api";
 import { saveToStorage } from "../../utils/storage";
 
 const Login = ({ navigation }) => {
@@ -21,8 +21,8 @@ const Login = ({ navigation }) => {
         // Save the JWT token to AsyncStorage
         await saveToStorage("userToken", data.token);
 
-        // After successful login, navigate to the home/dashboard screen
-        navigation.navigate("Home");
+        // After successful login, navigate to the main app stack
+        navigation.replace("MainMenu");
       } else {
         throw new Error("Token not received from server.");
       }
