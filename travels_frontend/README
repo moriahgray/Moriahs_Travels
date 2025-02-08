@@ -1,0 +1,30 @@
+# Moriah's Travels - Frontend
+
+This is the **React Native + Expo** frontend for Moriah's Travels. It runs on **iOS, Android, and Web** using Expo.
+
+---
+
+## 🚀 Features
+- **React Native + Expo** for cross-platform development
+- **JWT-based Authentication** for user login/signup
+- **React Navigation** for seamless app navigation
+- **Maps Support** (Platform-Specific: `react-native-maps` for mobile, WebView for web)
+- **Expo Image Picker** for uploading images
+
+---
+
+## 🛠️ Setup & Installation
+
+### **1️⃣ Prerequisites**
+Make sure you have these installed before starting:
+- **Node.js** (>=16.x) & **npm** / **yarn**
+- **Expo CLI** (`npm install -g expo-cli`)
+- **Android Studio** (for Android Emulator)
+- **Xcode** (for iOS development, macOS only)
+
+---
+
+### **2️⃣ Install Dependencies**
+```sh
+cd travels_frontend
+npm install

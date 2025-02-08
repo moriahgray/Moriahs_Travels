@@ -1,0 +1,85 @@
+Moriah's Travels - Backend
+
+Overview
+
+The backend for Moriah's Travels is built using Rust with the Actix Web framework. It provides API endpoints for user authentication, managing travel locations, and integrating with a MySQL/MariaDB database using Diesel ORM.
+
+Tech Stack
+
+Rust (Actix Web framework)
+
+Diesel ORM (for database interactions)
+
+MySQL/MariaDB (database)
+
+jsonwebtoken (for JWT authentication)
+
+dotenv (for environment variable management)
+
+Setup Instructions
+
+Prerequisites
+
+Install Rust (Latest stable version) from Rustup
+
+Install Diesel CLI:
+
+cargo install diesel_cli --no-default-features --features mysql
+
+MySQL or MariaDB database set up and running
+
+Installation & Running
+
+Clone the repository and navigate to the backend directory:
+
+git clone https://github.com/your-repo/moriahs-travels.git
+cd moriahs-travels/backend
+
+Set up the .env file with your database connection:
+
+DATABASE_URL=mysql://user:password@localhost/db_name
+JWT_SECRET=your-secret-key
+
+Run database migrations:
+
+diesel migration run
+
+Start the backend server:
+
+cargo run
+
+The server will start on http://localhost:8000
+
+API Endpoints
+
+Authentication
+
+POST /auth/login - Log in a user and receive a JWT token.
+
+POST /auth/register - Register a new user.
+
+GET /auth/verify - Verify authentication token.
+
+Places
+
+GET /places - Retrieve all places.
+
+POST /places - Add a new place.
+
+DELETE /places/:id - Delete a place.
+
+Database Schema
+
+The backend uses Diesel ORM for migrations and schema management. The database consists of the following tables:
+
+users - Stores user credentials and authentication details.
+
+places - Stores locations visited or planned.
+
+Contributing
+
+Feel free to submit a pull request or open an issue if you encounter any bugs or have feature suggestions.
+
+License
+
+This project is licensed under the MIT License.
