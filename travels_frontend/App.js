@@ -37,7 +37,7 @@ export default function App() {
         }
 
         const currentTime = Date.now() / 1000;
-        console.log("⏳ Current Time:", currentTime, "| Token Expiry:", decoded.exp);
+        console.log("Current Time:", currentTime, "| Token Expiry:", decoded.exp);
 
         if (decoded.exp > currentTime) {
           console.log("Token is valid locally. Checking with backend...");
@@ -103,7 +103,11 @@ export default function App() {
 
   return (
     <NavigationContainer ref={navigationRef}>
-      <AppNavigator isAuthenticated={isAuthenticated} setIsAuthenticated={setIsAuthenticated} navigationRef={navigationRef} />
+      <AppNavigator 
+        isAuthenticated={isAuthenticated} 
+        setIsAuthenticated={setIsAuthenticated} 
+        navigationRef={navigationRef} 
+      />
     </NavigationContainer>
   );
 }
