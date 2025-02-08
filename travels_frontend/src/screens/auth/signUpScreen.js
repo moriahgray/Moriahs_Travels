@@ -13,7 +13,7 @@ export default function SignUpScreen({ navigation }) {
     try {
       const userData = { firstName, lastName, email, password };
 
-      // Call signup API and let the backend handle user_id generation
+      // Call signup API and let the backend handle user_id generation (we are sending firstName as user_id)
       const response = await signup(userData);
 
       // After successful sign-up, navigate to login or main screen

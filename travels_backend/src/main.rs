@@ -2,6 +2,7 @@ use actix_web::{web, App, HttpServer, Responder, HttpResponse};
 use actix_cors::Cors;
 use diesel::prelude::*;
 use dotenvy::dotenv;
+use log::{info, error};
 
 mod diesel_types;
 mod handlers {
@@ -26,6 +27,9 @@ async fn health_check() -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    // Initialize the logger
+    env_logger::init();
+    
     // Load the .env file to access environment variables
     dotenv().ok();
 
@@ -34,12 +38,15 @@ async fn main() -> std::io::Result<()> {
 
     // Test the database connection
     let mut conn = pool.get().expect("Failed to get database connection");
-    diesel::sql_query("SELECT 1")
+    match diesel::sql_query("SELECT 1")
         .execute(&mut conn)
-        .expect("Database connection test failed");
+    {
+        Ok(_) => info!("Database connection successful"),
+        Err(e) => error!("Database connection test failed: {}", e),
+    };
 
     // Debugging: Print that the server is binding correctly
-    println!("Binding Actix-web server to 0.0.0.0:8000");
+    info!("Binding Actix-web server to 0.0.0.0:8000");
 
     // Start the Actix-web server
     HttpServer::new(move || {

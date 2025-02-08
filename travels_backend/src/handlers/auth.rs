@@ -8,11 +8,11 @@ use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use argon2::password_hash::{SaltString, PasswordHasher};
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
+use log::{info, error};
 
 #[derive(Deserialize, Serialize)] 
 pub struct RegisterUser {
-    pub user_id: String,
-    pub first_name: String,
+    pub first_name: String, // first_name will be the user_id now
     pub last_name: String,
     pub email: String,
     pub password: String,
@@ -29,14 +29,14 @@ pub async fn register_user(
     pool: web::Data<DbPool>,
     item: web::Json<RegisterUser>,
 ) -> impl Responder {
+    use log::{info, error};
+
+    info!("Received registration request: {:?}", item);
+
     let mut conn = pool.get().expect("Failed to get DB connection");
 
-    // Generate user_id from first 3 characters of first_name and last_name
-    let generated_user_id = format!(
-        "{}{}", 
-        &item.first_name[0..3], 
-        &item.last_name[0..3]
-    ).to_lowercase();
+    // Use first_name as user_id
+    let generated_user_id = item.first_name.clone();
 
     // Generate UUID for uuid_user_id
     let generated_uuid_user_id = Uuid::new_v4().to_string();
@@ -49,30 +49,30 @@ pub async fn register_user(
         .to_string();
 
     let new_user = NewUser {
-        user_id: generated_user_id, 
-        uuid_user_id: Some(generated_uuid_user_id), 
+        user_id: generated_user_id,
+        uuid_user_id: Some(generated_uuid_user_id),
         first_name: item.first_name.clone(),
         last_name: item.last_name.clone(),
         email: item.email.clone(),
         password: hashed_password,
     };
 
-    // Insert new user into the database
+    // Log user information before inserting into the database
+    info!("Inserting new user into the database: {:?}", new_user);
+
     match diesel::insert_into(users)
         .values(&new_user)
-        .execute(&mut conn)
+        .execute(&mut conn) 
     {
         Ok(_) => {
-            println!("User created successfully in the database.");
+            info!("User created successfully.");
             HttpResponse::Created()
                 .content_type("application/json")
                 .json(serde_json::json!({ "message": "User created successfully" }))
         }
         Err(e) => {
-            eprintln!("Error inserting new user: {}", e);
-            HttpResponse::InternalServerError()
-                .content_type("application/json")
-                .json(serde_json::json!({ "error": "Failed to create user" }))
+            error!("Error inserting new user: {:?}", e);
+            HttpResponse::InternalServerError().body("Error creating user")
         }
     }
 }
@@ -82,20 +82,27 @@ pub async fn login_user(
     pool: web::Data<DbPool>,
     item: web::Json<LoginUser>,
 ) -> impl Responder {
+    use log::{info, error};
+
+    info!("Received login request: {:?}", item);
+
     let mut conn = pool.get().expect("Failed to get DB connection");
 
     // Fetch user based on the email
     let user: User = match users
         .filter(email.eq(&item.email))
-        .first(&mut conn)
+        .first(&mut conn) 
     {
         Ok(user) => user,
-        Err(_) => {
+        Err(e) => {
+            error!("Error fetching user: {:?}", e);
             return HttpResponse::Unauthorized().body("Invalid credentials");
         }
     };
 
-    // Verify password
+    // Log user password verification attempt
+    info!("Verifying password for user: {}", item.email);
+
     let password_matches = if let Some(stored_password) = &user.password {
         Argon2::default()
             .verify_password(item.password.as_bytes(), &PasswordHash::new(stored_password).unwrap())
@@ -104,18 +111,26 @@ pub async fn login_user(
         false
     };
 
-    // If password doesn't match, return Unauthorized response
     if !password_matches {
+        error!("Password mismatch for user: {}", item.email);
         return HttpResponse::Unauthorized().body("Invalid credentials");
     }
 
-    // Generate a JWT token
+    // Generate JWT token
     let token: String = match generate_jwt(&user.uuid_user_id.unwrap_or_default()) {
-        Ok(token) => token,
-        Err(_) => return HttpResponse::InternalServerError().body("Error generating JWT"),
+        Ok(token) => {
+            info!("Generated JWT token successfully.");
+            token
+        }
+        Err(_) => {
+            error!("Error generating JWT token.");
+            return HttpResponse::InternalServerError().body("Error generating JWT");
+        }
     };
 
-    // Return the JWT token as a JSON response
+    // Log the token (consider masking sensitive parts in production)
+    info!("Returning JWT token: {}", token);
+
     HttpResponse::Ok().json(token)
 }
 
@@ -126,16 +141,24 @@ pub struct VerifyAuthResponse {
 
 #[get("/auth/verify")]
 pub async fn verify_auth(auth_header: Option<String>) -> impl Responder {
-    let token = auth_header.unwrap_or_default();
-    let decoded_token = decode_jwt(&token);
+    use log::{info, error};
 
-    match decoded_token {
-        Ok(_) => HttpResponse::Ok().json(VerifyAuthResponse {
-            message: "Token valid".to_string(),
-        }),
-        Err(_) => HttpResponse::Unauthorized().json(VerifyAuthResponse {
-            message: "Invalid token".to_string(),
-        }),
+    let token = auth_header.unwrap_or_default();
+    info!("Received token for verification: {}", token);
+
+    match decode_jwt(&token) {
+        Ok(_) => {
+            info!("Token is valid.");
+            HttpResponse::Ok().json(VerifyAuthResponse {
+                message: "Token valid".to_string(),
+            })
+        }
+        Err(e) => {
+            error!("Invalid token: {:?}", e);
+            HttpResponse::Unauthorized().json(VerifyAuthResponse {
+                message: "Invalid token".to_string(),
+            })
+        }
     }
 }
 
