@@ -10,7 +10,7 @@ use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use log::{info, error};
 
-#[derive(Deserialize, Serialize)] 
+#[derive(Deserialize, Serialize, Debug)] 
 pub struct RegisterUser {
     pub first_name: String, // first_name will be the user_id now
     pub last_name: String,
@@ -18,7 +18,7 @@ pub struct RegisterUser {
     pub password: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct LoginUser {
     pub email: String,
     pub password: String,
