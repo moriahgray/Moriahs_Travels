@@ -13,11 +13,11 @@ The app is built with:
 ## **Project Structure**
 ```
 moriahs-travels/
-│── backend/         # Rust backend with Actix Web and Diesel ORM
-│── frontend/        # React Native frontend using Expo
+│── travels_backend/         # Rust backend with Actix Web and Diesel ORM
+│── travels_frontend/        # React Native frontend using Expo
 │── README.md        # Main project overview (this file)
-│── backend/README.md  # Backend-specific instructions
-│── frontend/README.md  # Frontend-specific instructions
+│── travels_backend/README.md  # Backend-specific instructions
+│── travels_frontend/README.md  # Frontend-specific instructions
 ```
 
 ---
