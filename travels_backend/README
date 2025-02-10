@@ -13,7 +13,7 @@ The backend for Moriah's Travels is built with **Rust** using the **Actix Web fr
 ### **Installation**
 1. Clone the repository:
    ```sh
-   git clone https://github.com/your-repo/moriahs-travels.git
+   git clone https://github.com/moriahgray/Moriahs_Travels.git
    cd moriahs-travels/backend
    ```
 
