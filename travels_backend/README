@@ -19,7 +19,7 @@ The backend for Moriah's Travels is built with **Rust** using the **Actix Web fr
 
 2. Set up environment variables by creating a `.env` file:
    ```sh
-   DATABASE_URL=mysql://username:password@localhost/moriahTravels
+   DATABASE_URL=mysql://username:password@localhost:3000/moriahTravels
    JWT_SECRET=your_secret_key
    ```
 
