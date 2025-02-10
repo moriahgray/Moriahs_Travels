@@ -26,7 +26,10 @@ export default function AppNavigator({ isAuthenticated, setIsAuthenticated }) {
         </>
       ) : (
         <>
-          <Stack.Screen name="MainMenuScreen" component={MainMenuScreen} />
+          {/* Pass setIsAuthenticated explicitly to MainMenuScreen */}
+          <Stack.Screen name="MainMenuScreen">
+            {(props) => <MainMenuScreen {...props} setIsAuthenticated={setIsAuthenticated} />}
+          </Stack.Screen>
           <Stack.Screen name="TraveledTo" component={TraveledTo} />
           <Stack.Screen name="WantToTravel" component={WantToTravel} />
           <Stack.Screen name="PlaceDetails" component={PlaceDetails} />

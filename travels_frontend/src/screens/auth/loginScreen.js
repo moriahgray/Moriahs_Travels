@@ -64,7 +64,7 @@ export default function LoginScreen({ navigation, setIsAuthenticated }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", padding: 20, backgroundColor: "#FFF" },
+  container: { flex: 1, justifyContent: "top", padding: 50, backgroundColor: "#FFF" },
   header: { fontSize: 32, fontWeight: "bold", textAlign: "center", marginBottom: 30 },
   input: { borderWidth: 1, borderColor: "#ccc", padding: 10, marginBottom: 10, borderRadius: 5 },
   buttonContainer: { marginTop: 20, alignItems: "center" },
