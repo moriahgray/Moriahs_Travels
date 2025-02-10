@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
-import { removeToken } from "../../utils/storage"; // Import removeToken for logout
+import { removeToken } from "../../utils/storage";
 
 export default function MainMenuScreen({ navigation, setIsAuthenticated }) {
   useEffect(() => {

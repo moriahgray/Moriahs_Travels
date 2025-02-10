@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
   linkText: {
     fontSize: 16,
     color: "#007BFF",
-    textDecorationLine: "underline", // Makes it underlined
-    marginVertical: 5, // Adds space between links
+    textDecorationLine: "underline",
+    marginVertical: 5,
   },
 });
