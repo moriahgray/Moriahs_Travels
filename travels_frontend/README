@@ -16,7 +16,7 @@ The frontend for Moriah's Travels is a **React Native** application built with *
 ### **Installation**
 1. Clone the repository:
    ```sh
-   git clone https://github.com/your-repo/moriahs-travels.git
+   git clone https://github.com/moriahgray/Moriahs_Travels.git
    cd moriahs-travels/frontend
    ```
 

@@ -25,8 +25,8 @@ moriahs-travels/
 ## **Setup Instructions**
 To get started, follow the instructions in the respective directories:
 
-- **[Frontend Setup](./frontend/README.md)** (React Native / Expo)
-- **[Backend Setup](./backend/README.md)** (Rust / Actix Web)
+- **[Frontend Setup](./travels_frontend/README.md)** (React Native / Expo)
+- **[Backend Setup](./travels_backend/README.md)** (Rust / Actix Web)
 
 ---
 
