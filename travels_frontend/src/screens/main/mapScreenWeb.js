@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { WebView } from "react-native-webview";
+import { GOOGLE_MAPS_API_KEY } from "@env"; 
 
 export default function MapScreenWeb({ route }) {
   const { latitude, longitude } = route.params || { latitude: 37.7749, longitude: -122.4194 }; 
@@ -11,7 +12,7 @@ export default function MapScreenWeb({ route }) {
       <WebView
         style={styles.map}
         source={{
-          uri: `https://www.google.com/maps/embed/v1/view?key=YOUR_GOOGLE_MAPS_API_KEY&center=${latitude},${longitude}&zoom=14`,
+          uri: `https://www.google.com/maps/embed/v1/view?key=${GOOGLE_MAPS_API_KEY}&center=${latitude},${longitude}&zoom=14`,
         }}
       />
     </View>

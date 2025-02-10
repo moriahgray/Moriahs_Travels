@@ -1,19 +1,11 @@
 import React, { useLayoutEffect, useRef, useState } from "react";
 import { View, StyleSheet, Alert, TouchableOpacity, Text, Platform } from "react-native";
-
-// Import react-native-maps ONLY if it's NOT web
-let MapView;
-if (Platform.OS !== "web") {
-  MapView = require("react-native-maps").default;
-}
-
-// Import Web-friendly map
-import MapScreenWeb from "./mapScreenWeb"; // ✅ Web-friendly alternative
+import MapScreenWeb from "./mapScreenWeb"; 
+import MapView from "react-native-maps";
 
 const MapScreen = ({ route, navigation }) => {
   const { latitude, longitude } = route.params || {};
 
-  // ✅ If running on Web, use `mapScreenWeb.js`
   if (Platform.OS === "web") {
     return <MapScreenWeb route={route} />;
   }
@@ -32,25 +24,33 @@ const MapScreen = ({ route, navigation }) => {
 
   const zoomInHandler = () => {
     if (mapRef.current) {
-      setZoomLevel((prevZoom) => prevZoom / 2);
-      mapRef.current.animateToRegion({
-        latitude,
-        longitude,
-        latitudeDelta: zoomLevel / 2,
-        longitudeDelta: zoomLevel / 2,
-      }, 1000);
+      const newZoom = zoomLevel / 2;
+      setZoomLevel(newZoom);
+      mapRef.current.animateToRegion(
+        {
+          latitude,
+          longitude,
+          latitudeDelta: newZoom,
+          longitudeDelta: newZoom,
+        },
+        1000
+      );
     }
   };
 
   const zoomOutHandler = () => {
     if (mapRef.current) {
-      setZoomLevel((prevZoom) => prevZoom * 2);
-      mapRef.current.animateToRegion({
-        latitude,
-        longitude,
-        latitudeDelta: zoomLevel * 2,
-        longitudeDelta: zoomLevel * 2,
-      }, 1000);
+      const newZoom = zoomLevel * 2;
+      setZoomLevel(newZoom);
+      mapRef.current.animateToRegion(
+        {
+          latitude,
+          longitude,
+          latitudeDelta: newZoom,
+          longitudeDelta: newZoom,
+        },
+        1000
+      );
     }
   };
 
