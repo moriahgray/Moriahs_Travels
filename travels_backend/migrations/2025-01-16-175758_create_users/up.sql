@@ -1,5 +1,3 @@
--- up.sql
-
 CREATE TABLE users (
     user_id VARCHAR(6) PRIMARY KEY,
     uuid_user_id CHAR(36),
