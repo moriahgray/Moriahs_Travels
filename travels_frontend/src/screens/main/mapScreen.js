@@ -11,7 +11,7 @@ const MapScreen = ({ route }) => {
   const { latitude = 37.7749, longitude = -122.4194 } = route.params || {};
 
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: "YOUR_GOOGLE_MAPS_API_KEY",
+    googleMapsApiKey: "AIzaSyB04WXuf61NNG0W4Gxr0yYxEIuMgN61eBQ&center=",
   });
 
   if (loadError) return <Text style={styles.errorText}>Error loading maps</Text>;

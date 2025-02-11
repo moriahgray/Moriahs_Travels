@@ -1,7 +1,7 @@
 import { getFromStorage } from "./storage";
 import axios from "axios"; 
 
-const API_URL = "http://localhost:8000";
+const API_URL = "http://192.168.1.20:8000";
 
 const getHeaders = async () => {
   const token = await getFromStorage("token");

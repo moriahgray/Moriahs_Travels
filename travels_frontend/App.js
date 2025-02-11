@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Text, Platform } from "react-native";
+import { Text } from "react-native";
 import AppNavigator from "./src/navigation/appNavigator";
 import { getToken, removeToken } from "./src/utils/storage";
 import jwtDecode from "jwt-decode";
