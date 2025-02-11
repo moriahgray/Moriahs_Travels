@@ -1,7 +1,14 @@
 import React, { useLayoutEffect, useRef, useState } from "react";
 import { View, StyleSheet, Alert, TouchableOpacity, Text, Platform } from "react-native";
+
+let MapView;
+if (Platform.OS !== "web") {
+  MapView = require("react-native-maps").default;
+} else {
+  MapView = null;
+}
+
 import MapScreenWeb from "./mapScreenWeb"; 
-import MapView from "react-native-maps";
 
 const MapScreen = ({ route, navigation }) => {
   const { latitude, longitude } = route.params || {};
@@ -56,16 +63,18 @@ const MapScreen = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
-      <MapView
-        ref={mapRef}
-        style={styles.map}
-        initialRegion={{
-          latitude,
-          longitude,
-          latitudeDelta: zoomLevel,
-          longitudeDelta: zoomLevel,
-        }}
-      />
+      {MapView && (
+        <MapView
+          ref={mapRef}
+          style={styles.map}
+          initialRegion={{
+            latitude,
+            longitude,
+            latitudeDelta: zoomLevel,
+            longitudeDelta: zoomLevel,
+          }}
+        />
+      )}
       <View style={styles.zoomControls}>
         <TouchableOpacity onPress={zoomInHandler} style={styles.zoomButton}>
           <Text style={styles.zoomText}>+</Text>
