@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { View, TextInput, Button, Alert, StyleSheet, FlatList, TouchableOpacity, Text, Image, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
+import { 
+  View, TextInput, Button, Alert, StyleSheet, FlatList, TouchableOpacity, 
+  Text, Image, ScrollView, KeyboardAvoidingView, Platform 
+} from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { addPlace } from "../../utils/api";
 
@@ -46,7 +49,6 @@ export default function AddPlaceTraveledScreen({ navigation }) {
 
     try {
       const plansString = plans.join("; ");
-
       const result = await addPlace({
         name,
         description,
@@ -73,7 +75,7 @@ export default function AddPlaceTraveledScreen({ navigation }) {
   return (
     <KeyboardAvoidingView 
       style={styles.container} 
-      behavior={Platform.OS === "ios" ? "padding" : "position"} 
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView 
         contentContainerStyle={styles.scrollContainer} 
@@ -86,7 +88,6 @@ export default function AddPlaceTraveledScreen({ navigation }) {
           <TextInput placeholder="Hotels" style={styles.input} value={hotels} onChangeText={setHotels} />
           <TextInput placeholder="Restaurants" style={styles.input} value={restaurants} onChangeText={setRestaurants} />
 
-          {/* Input for adding plans */}
           <TextInput placeholder="Add a plan" style={styles.input} value={currentPlan} onChangeText={setCurrentPlan} />
           <TouchableOpacity
             style={styles.addButton}
@@ -111,14 +112,14 @@ export default function AddPlaceTraveledScreen({ navigation }) {
               </View>
             )}
             keyExtractor={(item, index) => index.toString()}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           />
 
-          {/* Image Picker */}
           <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
             <Text style={styles.imagePickerText}>Choose Image (Optional)</Text>
           </TouchableOpacity>
 
-          {/* Show Selected Image */}
           {selectedImage && (
             <View style={styles.imageContainer}>
               <Image source={{ uri: selectedImage }} style={styles.image} />
@@ -137,8 +138,8 @@ export default function AddPlaceTraveledScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
-  scrollContainer: { flexGrow: 1, justifyContent: "center", padding: 20, paddingBottom: 50 },
-  innerContainer: { flexGrow: 1, justifyContent: "center" },
+  scrollContainer: { flexGrow: 1, padding: 20, paddingBottom: 50 },
+  innerContainer: { flexGrow: 1 },
   input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 5, padding: 10, marginBottom: 10 },
   addButton: { backgroundColor: "#28A745", padding: 10, alignItems: "center", borderRadius: 5, marginBottom: 10 },
   addButtonText: { color: "#fff", fontSize: 16 },

@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { View, TextInput, Button, Alert, StyleSheet, FlatList, TouchableOpacity, Text, Image, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
+import { 
+  View, TextInput, Button, Alert, StyleSheet, FlatList, TouchableOpacity, 
+  Text, Image, ScrollView, KeyboardAvoidingView, Platform 
+} from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { addPlace } from "../../utils/api";
 
@@ -46,7 +49,6 @@ export default function AddPlaceWantScreen({ navigation }) {
 
     try {
       const plansString = plans.join("; ");
-
       const result = await addPlace({
         name,
         description,
@@ -75,56 +77,60 @@ export default function AddPlaceWantScreen({ navigation }) {
       style={styles.container} 
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-        <TextInput placeholder="Name" style={styles.input} value={name} onChangeText={setName} />
-        <TextInput placeholder="Description" style={styles.input} value={description} onChangeText={setDescription} />
-        <TextInput placeholder="Address" style={styles.input} value={address} onChangeText={setAddress} />
-        <TextInput placeholder="Hotels" style={styles.input} value={hotels} onChangeText={setHotels} />
-        <TextInput placeholder="Restaurants" style={styles.input} value={restaurants} onChangeText={setRestaurants} />
+      <ScrollView 
+        contentContainerStyle={styles.scrollContainer} 
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.innerContainer}>
+          <TextInput placeholder="Name" style={styles.input} value={name} onChangeText={setName} />
+          <TextInput placeholder="Description" style={styles.input} value={description} onChangeText={setDescription} />
+          <TextInput placeholder="Address" style={styles.input} value={address} onChangeText={setAddress} />
+          <TextInput placeholder="Hotels" style={styles.input} value={hotels} onChangeText={setHotels} />
+          <TextInput placeholder="Restaurants" style={styles.input} value={restaurants} onChangeText={setRestaurants} />
 
-        {/* Input for adding plans */}
-        <TextInput placeholder="Add a plan" style={styles.input} value={currentPlan} onChangeText={setCurrentPlan} />
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => {
-            if (currentPlan.trim()) {
-              setPlans([...plans, currentPlan.trim()]);
-              setCurrentPlan("");
-            }
-          }}
-        >
-          <Text style={styles.addButtonText}>Add Plan</Text>
-        </TouchableOpacity>
+          <TextInput placeholder="Add a plan" style={styles.input} value={currentPlan} onChangeText={setCurrentPlan} />
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => {
+              if (currentPlan.trim()) {
+                setPlans([...plans, currentPlan.trim()]);
+                setCurrentPlan("");
+              }
+            }}
+          >
+            <Text style={styles.addButtonText}>Add Plan</Text>
+          </TouchableOpacity>
 
-        <FlatList
-          data={plans}
-          renderItem={({ item, index }) => (
-            <View style={styles.planItemContainer}>
-              <Text style={styles.planItem}>{`Plan ${index + 1}: ${item}`}</Text>
-              <TouchableOpacity onPress={() => setPlans(plans.filter((_, i) => i !== index))}>
-                <Text style={styles.deletePlanButton}>X</Text>
+          <FlatList
+            data={plans}
+            renderItem={({ item, index }) => (
+              <View style={styles.planItemContainer}>
+                <Text style={styles.planItem}>{`Plan ${index + 1}: ${item}`}</Text>
+                <TouchableOpacity onPress={() => setPlans(plans.filter((_, i) => i !== index))}>
+                  <Text style={styles.deletePlanButton}>X</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            keyExtractor={(item, index) => index.toString()}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          />
+
+          <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
+            <Text style={styles.imagePickerText}>Choose Image (Optional)</Text>
+          </TouchableOpacity>
+
+          {selectedImage && (
+            <View style={styles.imageContainer}>
+              <Image source={{ uri: selectedImage }} style={styles.image} />
+              <TouchableOpacity onPress={() => setSelectedImage(null)}>
+                <Text style={styles.deleteImage}>X</Text>
               </TouchableOpacity>
             </View>
           )}
-          keyExtractor={(item, index) => index.toString()}
-        />
 
-        {/* Image Picker */}
-        <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
-          <Text style={styles.imagePickerText}>Choose Image (Optional)</Text>
-        </TouchableOpacity>
-
-        {/* Show Selected Image */}
-        {selectedImage && (
-          <View style={styles.imageContainer}>
-            <Image source={{ uri: selectedImage }} style={styles.image} />
-            <TouchableOpacity onPress={() => setSelectedImage(null)}>
-              <Text style={styles.deleteImage}>X</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        <Button title="Add Place" onPress={handleAddPlace} />
+          <Button title="Add Place" onPress={handleAddPlace} />
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -132,7 +138,8 @@ export default function AddPlaceWantScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
-  scrollContainer: { padding: 20, paddingBottom: 50 },
+  scrollContainer: { flexGrow: 1, padding: 20, paddingBottom: 50 },
+  innerContainer: { flexGrow: 1 },
   input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 5, padding: 10, marginBottom: 10 },
   addButton: { backgroundColor: "#28A745", padding: 10, alignItems: "center", borderRadius: 5, marginBottom: 10 },
   addButtonText: { color: "#fff", fontSize: 16 },
