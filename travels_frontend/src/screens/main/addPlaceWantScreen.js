@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { 
   View, TextInput, Button, Alert, StyleSheet, FlatList, TouchableOpacity, 
-  Text, Image, ScrollView, KeyboardAvoidingView, Platform 
+  Text, ScrollView, KeyboardAvoidingView, Platform 
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { addPlace } from "../../utils/api";
@@ -15,6 +15,7 @@ export default function AddPlaceWantScreen({ navigation }) {
   const [hotels, setHotels] = useState("");
   const [restaurants, setRestaurants] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImageName, setSelectedImageName] = useState(null);
 
   useEffect(() => {
     navigation.setOptions({
@@ -38,6 +39,8 @@ export default function AddPlaceWantScreen({ navigation }) {
 
     if (!result.canceled) {
       setSelectedImage(result.assets[0].uri);
+      const imageName = result.assets[0].uri.split("/").pop(); // Extract filename
+      setSelectedImageName(imageName);
     }
   };
 
@@ -59,7 +62,7 @@ export default function AddPlaceWantScreen({ navigation }) {
         category: "wantToTravel",
         hotels,
         restaurants,
-        imageUri: selectedImage,
+        imageUri: selectedImage, // Image is still stored but not displayed
       });
 
       if (result) {
@@ -80,7 +83,7 @@ export default function AddPlaceWantScreen({ navigation }) {
       <ScrollView 
         contentContainerStyle={styles.scrollContainer} 
         keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={true} // Force scrollbar
+        showsVerticalScrollIndicator={true}
       >
         <View style={styles.innerContainer}>
           <TextInput placeholder="Name" style={styles.input} value={name} onChangeText={setName} />
@@ -114,18 +117,23 @@ export default function AddPlaceWantScreen({ navigation }) {
             )}
             keyExtractor={(item, index) => index.toString()}
             keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={true} // Ensure scrollbar on list
+            showsVerticalScrollIndicator={true}
           />
 
+          {/* Image Picker Button */}
           <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
             <Text style={styles.imagePickerText}>Choose Image (Optional)</Text>
           </TouchableOpacity>
 
-          {selectedImage && (
-            <View style={styles.imageContainer}>
-              <Image source={{ uri: selectedImage }} style={styles.image} />
-              <TouchableOpacity onPress={() => setSelectedImage(null)}>
-                <Text style={styles.deleteImage}>X</Text>
+          {/* Show Only Image Name Instead of Image */}
+          {selectedImageName && (
+            <View style={styles.imageNameContainer}>
+              <Text style={styles.imageNameText}>{selectedImageName}</Text>
+              <TouchableOpacity onPress={() => {
+                setSelectedImage(null);
+                setSelectedImageName(null);
+              }}>
+                <Text style={styles.deleteImageText}>X</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -139,12 +147,7 @@ export default function AddPlaceWantScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
-  scrollContainer: { 
-    flexGrow: 1, 
-    padding: 20, 
-    paddingBottom: 50, 
-    minHeight: "100%" // Forces scroll on content
-  },
+  scrollContainer: { flexGrow: 1, padding: 20, paddingBottom: 50, minHeight: "100%" },
   innerContainer: { flexGrow: 1 },
   input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 5, padding: 10, marginBottom: 10 },
   addButton: { backgroundColor: "#28A745", padding: 10, alignItems: "center", borderRadius: 5, marginBottom: 10 },
@@ -160,7 +163,15 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   imagePickerText: { color: "#fff", fontSize: 16 },
-  imageContainer: { alignItems: "center", marginTop: 10 },
-  image: { width: "100%", height: 200, marginBottom: 10 },
-  deleteImage: { color: "red", fontSize: 18 },
+  imageNameContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 5,
+  },
+  imageNameText: { fontSize: 16 },
+  deleteImageText: { color: "red", fontSize: 18 },
 });
