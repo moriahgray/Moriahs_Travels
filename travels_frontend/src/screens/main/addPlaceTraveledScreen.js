@@ -1,21 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { 
   View, TextInput, Button, Alert, StyleSheet, FlatList, TouchableOpacity, 
-  Text, ScrollView, KeyboardAvoidingView, Platform 
+  Text, ScrollView, KeyboardAvoidingView, Platform, Modal
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { addPlace } from "../../utils/api";
 
 export default function AddPlaceTraveledScreen({ navigation }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [address, setAddress] = useState("");
-  const [plans, setPlans] = useState([]);
-  const [currentPlan, setCurrentPlan] = useState("");
+  const [plans, setPlans] = useState([]);  // List of plans
+  const [currentPlan, setCurrentPlan] = useState(""); // Current text input for plan
   const [hotels, setHotels] = useState("");
   const [restaurants, setRestaurants] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
-  const [selectedImageName, setSelectedImageName] = useState(null);
+  const [customImageName, setCustomImageName] = useState(""); 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [tempImageUri, setTempImageUri] = useState(null);
 
   useEffect(() => {
     navigation.setOptions({
@@ -25,38 +26,80 @@ export default function AddPlaceTraveledScreen({ navigation }) {
   }, [navigation]);
 
   const pickImage = async () => {
+    if (selectedImage) {
+      Alert.alert("Action Required", "Please remove the existing image before selecting a new one.");
+      return;
+    }
+
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       Alert.alert("Permission Denied", "You need to grant photo library access to select an image.");
       return;
     }
-  
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 1,
     });
-  
-    console.log("Image Picker Result:", result); // Log the result object
-  
+
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const imageUri = result.assets[0].uri;
-      console.log("Selected Image URI:", imageUri); // Log the image URI
-  
-      setSelectedImage(imageUri);
-  
-      // Extract filename
-      try {
-        const uriParts = imageUri.split("/");
-        const imageName = uriParts[uriParts.length - 1]; 
-        console.log("Extracted Image Name:", imageName);
-  
-        setSelectedImageName(imageName);
-      } catch (error) {
-        console.error("Error extracting image name:", error);
+
+      if (Platform.OS === "ios") {
+        Alert.prompt(
+          "Name Your Image",
+          "Please enter a name for this image before continuing.",
+          [
+            { text: "Cancel", style: "cancel" },
+            {
+              text: "OK",
+              onPress: (input) => {
+                if (!input.trim()) {
+                  Alert.alert("Error", "Image name cannot be empty.");
+                  return;
+                }
+                setSelectedImage(imageUri);
+                setCustomImageName(input.trim());
+              },
+            },
+          ],
+          "plain-text"
+        );
+      } else {
+        setTempImageUri(imageUri);
+        setModalVisible(true);
       }
     }
-  };  
+  };
+
+  const handleConfirmImageName = () => {
+    if (!customImageName.trim()) {
+      Alert.alert("Error", "Image name cannot be empty.");
+      return;
+    }
+    setSelectedImage(tempImageUri);
+    setModalVisible(false);
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setCustomImageName("");
+  };
+
+  const handleAddPlan = () => {
+    if (!currentPlan.trim()) {
+      Alert.alert("Error", "Plan cannot be empty.");
+      return;
+    }
+    setPlans([...plans, currentPlan.trim()]); // Add plan to the list
+    setCurrentPlan(""); // Clear input after adding
+  };
+
+  const handleDeletePlan = (index) => {
+    const updatedPlans = plans.filter((_, i) => i !== index);
+    setPlans(updatedPlans);
+  };
 
   const handleAddPlace = async () => {
     if (!name || !address || !hotels || !restaurants || plans.length === 0) {
@@ -64,9 +107,14 @@ export default function AddPlaceTraveledScreen({ navigation }) {
       return;
     }
 
+    if (selectedImage && !customImageName.trim()) {
+      Alert.alert("Error", "Please enter a name for the image.");
+      return;
+    }
+
     try {
       const plansString = plans.join("; ");
-      const result = await addPlace({
+      console.log({
         name,
         description,
         address,
@@ -76,13 +124,12 @@ export default function AddPlaceTraveledScreen({ navigation }) {
         category: "traveled",
         hotels,
         restaurants,
-        imageUri: selectedImage,
+        imageUri: selectedImage, 
+        imageName: customImageName,
       });
 
-      if (result) {
-        Alert.alert("Success", "Place added successfully!");
-        navigation.goBack();
-      }
+      Alert.alert("Success", "Place added successfully!");
+      navigation.goBack();
     } catch (error) {
       console.error("Error:", error);
       Alert.alert("Error", "Failed to add place.");
@@ -106,47 +153,47 @@ export default function AddPlaceTraveledScreen({ navigation }) {
           <TextInput placeholder="Hotels" style={styles.input} value={hotels} onChangeText={setHotels} />
           <TextInput placeholder="Restaurants" style={styles.input} value={restaurants} onChangeText={setRestaurants} />
 
-          <TextInput placeholder="Add a plan" style={styles.input} value={currentPlan} onChangeText={setCurrentPlan} />
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={() => {
-              if (currentPlan.trim()) {
-                setPlans([...plans, currentPlan.trim()]);
-                setCurrentPlan("");
-              }
-            }}
-          >
-            <Text style={styles.addButtonText}>Add Plan</Text>
-          </TouchableOpacity>
+          {/* Add Plan Input */}
+          <View style={styles.planInputContainer}>
+            <TextInput 
+              placeholder="Add a plan" 
+              style={[styles.input, { flex: 1 }]} 
+              value={currentPlan} 
+              onChangeText={setCurrentPlan} 
+            />
+            <TouchableOpacity style={styles.addButton} onPress={handleAddPlan}>
+              <Text style={styles.addButtonText}>Add</Text>
+            </TouchableOpacity>
+          </View>
 
+          {/* Plans List */}
           <FlatList
             data={plans}
             renderItem={({ item, index }) => (
               <View style={styles.planItemContainer}>
-                <Text style={styles.planItem}>{`Plan ${index + 1}: ${item}`}</Text>
-                <TouchableOpacity onPress={() => setPlans(plans.filter((_, i) => i !== index))}>
+                <Text style={styles.planItem}>{item}</Text>
+                <TouchableOpacity onPress={() => handleDeletePlan(index)}>
                   <Text style={styles.deletePlanButton}>X</Text>
                 </TouchableOpacity>
               </View>
             )}
             keyExtractor={(item, index) => index.toString()}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={true}
           />
 
-          {/* Image Picker Button */}
-          <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
-            <Text style={styles.imagePickerText}>Choose Image (Optional)</Text>
+          <TouchableOpacity 
+            style={styles.imagePickerButton} 
+            onPress={pickImage} 
+            disabled={selectedImage !== null}
+          >
+            <Text style={[styles.imagePickerText, selectedImage && { opacity: 0.5 }]}>
+              {selectedImage ? "Image Selected" : "Choose Image (Optional)"}
+            </Text>
           </TouchableOpacity>
 
-          {/* Show Only Image Name Instead of Image */}
-          {selectedImageName && (
+          {selectedImage && (
             <View style={styles.imageNameContainer}>
-              <Text style={styles.imageNameText}>{selectedImageName}</Text>
-              <TouchableOpacity onPress={() => {
-                setSelectedImage(null);
-                setSelectedImageName(null);
-              }}>
+              <Text style={styles.imageNameText}>{customImageName}</Text>
+              <TouchableOpacity onPress={handleRemoveImage}>
                 <Text style={styles.deleteImageText}>X</Text>
               </TouchableOpacity>
             </View>
@@ -161,31 +208,12 @@ export default function AddPlaceTraveledScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
-  scrollContainer: { flexGrow: 1, padding: 20, paddingBottom: 50, minHeight: "100%" },
+  scrollContainer: { flexGrow: 1, padding: 20, paddingBottom: 50 },
   innerContainer: { flexGrow: 1 },
   input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 5, padding: 10, marginBottom: 10 },
-  addButton: { backgroundColor: "#28A745", padding: 10, alignItems: "center", borderRadius: 5, marginBottom: 10 },
+  planInputContainer: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
+  addButton: { backgroundColor: "#28A745", padding: 10, borderRadius: 5, marginLeft: 10 },
   addButtonText: { color: "#fff", fontSize: 16 },
-  planItemContainer: { flexDirection: "row", alignItems: "center", marginBottom: 5 },
-  planItem: { fontSize: 16 },
-  deletePlanButton: { color: "red", marginLeft: 10, fontSize: 16 },
-  imagePickerButton: {
-    backgroundColor: "#007BFF",
-    padding: 10,
-    borderRadius: 5,
-    alignItems: "center",
-    marginVertical: 10,
-  },
-  imagePickerText: { color: "#fff", fontSize: 16 },
-  imageNameContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 5,
-  },
-  imageNameText: { fontSize: 16 },
-  deleteImageText: { color: "red", fontSize: 18 },
+  planItemContainer: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 5 },
+  deletePlanButton: { color: "red", fontSize: 16 },
 });
