@@ -1,9 +1,7 @@
-import { API_URL } from "@env";
 import { getFromStorage } from "./storage";
 import axios from "axios"; 
 
-// Get API URL from environment variable or fallback to default
-console.log("API URL:", API_URL);
+const API_URL = "http://localhost:8000";
 
 const getHeaders = async () => {
   const token = await getFromStorage("token");

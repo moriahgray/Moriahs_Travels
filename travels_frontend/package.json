@@ -1,0 +1,23 @@
+{
+  "name": "travels_frontend",
+  "version": "1.0.0",
+  "description": "## **Overview** The frontend for Moriah's Travels is a **React Native** application built with **Expo**. It supports **iOS, Android, and Web** with navigation, authentication, and location tracking.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@expo/metro-runtime": "~4.0.1",
+    "@react-navigation/native": "^7.0.14",
+    "expo": "^52.0.0",
+    "jwt-decode": "^4.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-native": "^0.76.6",
+    "react-native-screens": "^4.6.0",
+    "react-native-web": "~0.19.13"
+  }
+}

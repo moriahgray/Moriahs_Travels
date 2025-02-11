@@ -12,7 +12,7 @@ export default function MapScreenWeb({ route }) {
       <WebView
         style={styles.map}
         source={{
-          uri: `https://www.google.com/maps/embed/v1/view?key=${GOOGLE_MAPS_API_KEY}&center=${latitude},${longitude}&zoom=14`,
+          uri: `https://www.google.com/maps/embed/v1/view?key=AIzaSyB04WXuf61NNG0W4Gxr0yYxEIuMgN61eBQ&center=${latitude},${longitude}&zoom=14`,
         }}
       />
     </View>
