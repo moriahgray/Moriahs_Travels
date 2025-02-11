@@ -1,85 +1,37 @@
-import React, { useLayoutEffect, useRef, useState } from "react";
-import { View, StyleSheet, Alert, TouchableOpacity, Text, Platform } from "react-native";
+import React from "react";
+import { View, StyleSheet, TouchableOpacity, Text } from "react-native";
+import { GoogleMap, useLoadScript, Marker } from "@react-google-maps/api";
 
-let MapView;
-if (Platform.OS !== "web") {
-  MapView = require("react-native-maps").default;
-} else {
-  MapView = null;
-}
+const mapContainerStyle = {
+  width: "100%",
+  height: "100%",
+};
 
-import MapScreenWeb from "./mapScreenWeb"; 
+const MapScreen = ({ route }) => {
+  const { latitude = 37.7749, longitude = -122.4194 } = route.params || {};
 
-const MapScreen = ({ route, navigation }) => {
-  const { latitude, longitude } = route.params || {};
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: "YOUR_GOOGLE_MAPS_API_KEY",
+  });
 
-  if (Platform.OS === "web") {
-    return <MapScreenWeb route={route} />;
-  }
-
-  if (!latitude || !longitude) {
-    Alert.alert("Error", "Invalid location data");
-    return null;
-  }
-
-  const mapRef = useRef(null);
-  const [zoomLevel, setZoomLevel] = useState(0.05);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({ headerTitle: "Map View" });
-  }, [navigation]);
-
-  const zoomInHandler = () => {
-    if (mapRef.current) {
-      const newZoom = zoomLevel / 2;
-      setZoomLevel(newZoom);
-      mapRef.current.animateToRegion(
-        {
-          latitude,
-          longitude,
-          latitudeDelta: newZoom,
-          longitudeDelta: newZoom,
-        },
-        1000
-      );
-    }
-  };
-
-  const zoomOutHandler = () => {
-    if (mapRef.current) {
-      const newZoom = zoomLevel * 2;
-      setZoomLevel(newZoom);
-      mapRef.current.animateToRegion(
-        {
-          latitude,
-          longitude,
-          latitudeDelta: newZoom,
-          longitudeDelta: newZoom,
-        },
-        1000
-      );
-    }
-  };
+  if (loadError) return <Text style={styles.errorText}>Error loading maps</Text>;
+  if (!isLoaded) return <Text style={styles.loadingText}>Loading Maps...</Text>;
 
   return (
     <View style={styles.container}>
-      {MapView && (
-        <MapView
-          ref={mapRef}
-          style={styles.map}
-          initialRegion={{
-            latitude,
-            longitude,
-            latitudeDelta: zoomLevel,
-            longitudeDelta: zoomLevel,
-          }}
-        />
-      )}
+      <GoogleMap
+        mapContainerStyle={mapContainerStyle}
+        center={{ lat: latitude, lng: longitude }}
+        zoom={14}
+      >
+        <Marker position={{ lat: latitude, lng: longitude }} />
+      </GoogleMap>
+
       <View style={styles.zoomControls}>
-        <TouchableOpacity onPress={zoomInHandler} style={styles.zoomButton}>
+        <TouchableOpacity onPress={() => alert("Zoom In")} style={styles.zoomButton}>
           <Text style={styles.zoomText}>+</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={zoomOutHandler} style={styles.zoomButton}>
+        <TouchableOpacity onPress={() => alert("Zoom Out")} style={styles.zoomButton}>
           <Text style={styles.zoomText}>-</Text>
         </TouchableOpacity>
       </View>
@@ -112,6 +64,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#333",
+  },
+  loadingText: {
+    fontSize: 18,
+    textAlign: "center",
+    marginTop: 20,
+  },
+  errorText: {
+    fontSize: 18,
+    textAlign: "center",
+    marginTop: 20,
+    color: "red",
   },
 });
 
