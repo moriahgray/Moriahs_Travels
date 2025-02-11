@@ -1,7 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { WebView } from "react-native-webview";
-import { GOOGLE_MAPS_API_KEY } from "@env"; 
 
 export default function MapScreenWeb({ route }) {
   const { latitude, longitude } = route.params || { latitude: 37.7749, longitude: -122.4194 }; 
