@@ -30,19 +30,23 @@ export default function AddPlaceTraveledScreen({ navigation }) {
       Alert.alert("Permission Denied", "You need to grant photo library access to select an image.");
       return;
     }
-
+  
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 1,
     });
-
+  
     if (!result.canceled) {
       setSelectedImage(result.assets[0].uri);
-      const imageName = result.assets[0].uri.split("/").pop(); // Extract filename
+  
+      // Fixing the filename extraction
+      const uriParts = result.assets[0].uri.split("/");
+      const imageName = uriParts[uriParts.length - 1]; 
+  
       setSelectedImageName(imageName);
     }
-  };
+  };  
 
   const handleAddPlace = async () => {
     if (!name || !address || !hotels || !restaurants || plans.length === 0) {
