@@ -32,23 +32,31 @@ export default function AddPlaceTraveledScreen({ navigation }) {
     }
   
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaType.Images,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 1,
     });
   
+    console.log("Image Picker Result:", result); // Log the result object
+  
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const imageUri = result.assets[0].uri;
-    
+      console.log("Selected Image URI:", imageUri); // Log the image URI
+  
       setSelectedImage(imageUri);
-    
-      // Extract filename correctly
-      const uriParts = imageUri.split("/");
-      const imageName = uriParts.pop();
-    
-      setSelectedImageName(imageName);
+  
+      // Extract filename
+      try {
+        const uriParts = imageUri.split("/");
+        const imageName = uriParts[uriParts.length - 1]; 
+        console.log("Extracted Image Name:", imageName);
+  
+        setSelectedImageName(imageName);
+      } catch (error) {
+        console.error("Error extracting image name:", error);
+      }
     }
-  };    
+  };  
 
   const handleAddPlace = async () => {
     if (!name || !address || !hotels || !restaurants || plans.length === 0) {
