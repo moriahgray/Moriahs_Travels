@@ -80,6 +80,7 @@ export default function AddPlaceWantScreen({ navigation }) {
       <ScrollView 
         contentContainerStyle={styles.scrollContainer} 
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={true} // Force scrollbar
       >
         <View style={styles.innerContainer}>
           <TextInput placeholder="Name" style={styles.input} value={name} onChangeText={setName} />
@@ -113,7 +114,7 @@ export default function AddPlaceWantScreen({ navigation }) {
             )}
             keyExtractor={(item, index) => index.toString()}
             keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
+            showsVerticalScrollIndicator={true} // Ensure scrollbar on list
           />
 
           <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
@@ -138,7 +139,12 @@ export default function AddPlaceWantScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
-  scrollContainer: { flexGrow: 1, padding: 20, paddingBottom: 50 },
+  scrollContainer: { 
+    flexGrow: 1, 
+    padding: 20, 
+    paddingBottom: 50, 
+    minHeight: "100%" // Forces scroll on content
+  },
   innerContainer: { flexGrow: 1 },
   input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 5, padding: 10, marginBottom: 10 },
   addButton: { backgroundColor: "#28A745", padding: 10, alignItems: "center", borderRadius: 5, marginBottom: 10 },
