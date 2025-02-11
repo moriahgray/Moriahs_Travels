@@ -32,21 +32,23 @@ export default function AddPlaceWantScreen({ navigation }) {
     }
   
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaType.Images,
       allowsEditing: true,
       quality: 1,
     });
   
-    if (!result.canceled) {
-      setSelectedImage(result.assets[0].uri);
-  
-      // Fixing the filename extraction
-      const uriParts = result.assets[0].uri.split("/");
-      const imageName = uriParts[uriParts.length - 1];
-  
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const imageUri = result.assets[0].uri;
+    
+      setSelectedImage(imageUri);
+    
+      // Extract filename correctly
+      const uriParts = imageUri.split("/");
+      const imageName = uriParts.pop();
+    
       setSelectedImageName(imageName);
     }
-  };  
+  }; 
 
   const handleAddPlace = async () => {
     if (!name || !address || !hotels || !restaurants || plans.length === 0) {
@@ -66,7 +68,7 @@ export default function AddPlaceWantScreen({ navigation }) {
         category: "wantToTravel",
         hotels,
         restaurants,
-        imageUri: selectedImage, // Image is still stored but not displayed
+        imageUri: selectedImage,
       });
 
       if (result) {
