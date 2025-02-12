@@ -37,12 +37,11 @@ export default function AppNavigator({ isAuthenticated, setIsAuthenticated }) {
         headerTitle: "", // ✅ Removes titles
       })}
     >
-      {/* Show Auth Screens if not authenticated */}
       {!isAuthenticated ? (
         <>
           <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ headerShown: false }} />
           <Stack.Screen name="Login">
-            {() => <LoginScreen setIsAuthenticated={setIsAuthenticated} />}
+            {(props) => <LoginScreen {...props} setIsAuthenticated={setIsAuthenticated} />}
           </Stack.Screen>
           <Stack.Screen name="SignUp" component={SignUpScreen} />
         </>

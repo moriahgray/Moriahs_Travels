@@ -17,13 +17,11 @@ export default function LoginScreen({ navigation, setIsAuthenticated }) {
         await saveToStorage("jwtToken", data.token);
         console.log("Login successful, token saved.");
 
-        // Update authentication state in App.js
+        // Update authentication state
         setIsAuthenticated(true);
 
-        // Reset navigation stack to MainMenuScreen
-        console.log("Current Navigation State:", navigation.getState());
-
-        navigation.navigate;("MainMenuScreen");
+        // Navigate to MainMenu (corrected navigation name)
+        navigation.navigate("MainMenu");
 
       } else {
         Alert.alert("Login Error", "Invalid credentials. Please try again.");

@@ -17,7 +17,7 @@ export default function MainMenuScreen({ navigation, setIsAuthenticated }) {
   // Logout Function
   const handleLogout = async () => {
     try {
-      await removeToken(); 
+      await removeToken();
       setIsAuthenticated(false);
       navigation.reset({
         index: 0,
@@ -60,13 +60,13 @@ const styles = StyleSheet.create({
   },
   linkText: {
     fontSize: 18,
-    color: "#007BFF", // Same color as links in authentication screens
-    textDecorationLine: "underline", // Underlined text
+    color: "#007BFF",
+    textDecorationLine: "underline",
     marginVertical: 10,
   },
   logoutText: {
     fontSize: 16,
-    color: "#DC3545", 
-    marginRight: 15, 
+    color: "#DC3545",
+    marginRight: 15,
   },
 });
