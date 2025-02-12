@@ -1,81 +1,62 @@
-import React from "react";
-import { View, StyleSheet, TouchableOpacity, Text } from "react-native";
+import React, { useEffect } from "react";
+import { View, StyleSheet, TouchableOpacity, Text, ActivityIndicator } from "react-native";
 import { GoogleMap, useLoadScript, Marker } from "@react-google-maps/api";
 
-const mapContainerStyle = {
-  width: "100%",
-  height: "100%",
-};
+export default function MapScreen({ route, navigation }) {
+  const { latitude, longitude, name } = route.params;
+  const googleMapsApiKey = your_google_api_key;
 
-const MapScreen = ({ route }) => {
-  const { latitude = 37.7749, longitude = -122.4194 } = route.params || {};
+  useEffect(() => {
+    navigation.setOptions({
+      title: "Map",
+      headerBackTitle: "Back",
+      headerBackTitleVisible: false,
+      headerLeft: () => (
+        <TouchableOpacity onPress={() => navigation.goBack()} style={{ paddingLeft: 15 }}>
+          <Text style={{ color: "blue", fontSize: 17 }}>Back</Text>
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
 
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: "AIzaSyB04WXuf61NNG0W4Gxr0yYxEIuMgN61eBQ",
+    googleMapsApiKey: googleMapsApiKey,
   });
 
-  if (loadError) return <Text style={styles.errorText}>Error loading maps</Text>;
-  if (!isLoaded) return <Text style={styles.loadingText}>Loading Maps...</Text>;
+  if (loadError) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Error loading map.</Text>
+      </View>
+    );
+  }
+
+  if (!isLoaded) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#007BFF" />
+        <Text>Loading Map...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <GoogleMap
-        mapContainerStyle={mapContainerStyle}
-        center={{ lat: latitude, lng: longitude }}
-        zoom={14}
+        mapContainerStyle={styles.map}
+        center={{ lat: parseFloat(latitude), lng: parseFloat(longitude) }}
+        zoom={15}
       >
-        <Marker position={{ lat: latitude, lng: longitude }} />
+        <Marker position={{ lat: parseFloat(latitude), lng: parseFloat(longitude) }} title={name} />
       </GoogleMap>
-
-      <View style={styles.zoomControls}>
-        <TouchableOpacity onPress={() => alert("Zoom In")} style={styles.zoomButton}>
-          <Text style={styles.zoomText}>+</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => alert("Zoom Out")} style={styles.zoomButton}>
-          <Text style={styles.zoomText}>-</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  map: { flex: 1 },
-  zoomControls: {
-    position: "absolute",
-    right: 10,
-    top: 10,
-    flexDirection: "column",
-    backgroundColor: "rgba(255, 255, 255, 0.7)",
-    borderRadius: 5,
-    padding: 5,
-  },
-  zoomButton: {
-    width: 40,
-    height: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "white",
-    borderRadius: 20,
-    marginVertical: 5,
-  },
-  zoomText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  loadingText: {
-    fontSize: 18,
-    textAlign: "center",
-    marginTop: 20,
-  },
-  errorText: {
-    fontSize: 18,
-    textAlign: "center",
-    marginTop: 20,
-    color: "red",
-  },
+  container: { flex: 1, backgroundColor: "#fff" },
+  map: { width: "100%", height: "100%" },
+  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  errorContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  errorText: { color: "red", fontSize: 18 },
 });
-
-export default MapScreen;
