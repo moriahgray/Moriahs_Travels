@@ -20,12 +20,10 @@ export default function PlaceDetails({ route, navigation }) {
     });
   }, [navigation, place]);
 
-  // Navigate to Edit screen
   const handleEdit = () => {
     navigation.navigate("EditPlaceScreen", { placeId: place.id, category: place.category });
   };
 
-  // Delete the place
   const handleDelete = async () => {
     Alert.alert(
       "Delete Place",
@@ -55,8 +53,9 @@ export default function PlaceDetails({ route, navigation }) {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text style={styles.title}>{place.title}</Text>
         {place.description && <Text style={styles.description}>{place.description}</Text>}
-        {place.imageUri || place.image_uri ? (
-          <Image source={{ uri: place.imageUri || place.image_uri }} style={styles.image} />
+
+        {place.imageUri ? (
+          <Image source={{ uri: place.imageUri }} style={styles.image} />
         ) : (
           <Image source={require("../../../assets/splash-icon.png")} style={styles.image} />
         )}
@@ -70,11 +69,13 @@ export default function PlaceDetails({ route, navigation }) {
         <Text style={styles.sectionTitle}>Restaurants</Text>
         <Text style={styles.content}>{place.restaurants || "No restaurant information available"}</Text>
 
-        <TouchableOpacity style={styles.showOnMapButton} onPress={() => navigation.navigate("MapScreen", { latitude: place.latitude, longitude: place.longitude })}>
+        <TouchableOpacity
+          style={styles.showOnMapButton}
+          onPress={() => navigation.navigate("MapScreen", { latitude: place.latitude, longitude: place.longitude })}
+        >
           <Text style={styles.showOnMapText}>Show on Map</Text>
         </TouchableOpacity>
 
-        {/* ✅ Edit & Delete Buttons */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
             <MaterialIcons name="edit" size={24} color="white" />

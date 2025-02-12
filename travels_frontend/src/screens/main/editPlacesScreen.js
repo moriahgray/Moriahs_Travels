@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { 
-  View, TextInput, Button, Alert, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Image, TouchableOpacity, Text 
-} from "react-native";
+import { View, TextInput, Button, Alert, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Image, TouchableOpacity, Text } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { updatePlace, getPlaceDetails } from "../../utils/api";
 
@@ -16,7 +14,7 @@ export default function EditPlaceScreen({ route, navigation }) {
   const [imageUri, setImageUri] = useState(null);
 
   useEffect(() => {
-    navigation.setOptions({ 
+    navigation.setOptions({
       title: "Edit Place",
       headerBackTitle: "Back",
       headerBackTitleVisible: false,
@@ -31,13 +29,14 @@ export default function EditPlaceScreen({ route, navigation }) {
       try {
         const place = await getPlaceDetails(placeId);
         if (place) {
+          // now we assume the server returns place.imageUri consistently
           setName(place.title || "");
           setDescription(place.description || "");
           setAddress(place.address || "");
           setPlans(place.plans || "");
           setHotels(place.hotels || "");
           setRestaurants(place.restaurants || "");
-          setImageUri(place.image_uri || null);
+          setImageUri(place.imageUri || null);
         }
       } catch (error) {
         console.error("Error fetching place details:", error);
@@ -56,8 +55,7 @@ export default function EditPlaceScreen({ route, navigation }) {
       quality: 1,
     });
 
-    if (!result.canceled && result.assets.length > 0) {
-      console.log("Selected image:", result.assets[0].uri);
+    if (!result.canceled && result.assets && result.assets.length > 0) {
       setImageUri(result.assets[0].uri);
     }
   };
@@ -78,10 +76,10 @@ export default function EditPlaceScreen({ route, navigation }) {
       formData.append("restaurants", restaurants);
       formData.append("category", category);
 
-      // Append the image file if a new one was selected
+      // if a new image was selected, append to form
       if (imageUri) {
         const filename = imageUri.split("/").pop();
-        const match = /\.(\w+)$/.exec(filename);
+        const match = /\.(\w+)$/.exec(filename || "");
         const type = match ? `image/${match[1]}` : "image";
 
         formData.append("image", {
@@ -96,7 +94,6 @@ export default function EditPlaceScreen({ route, navigation }) {
       });
 
       console.log("API Response:", response);
-
       Alert.alert("Success", "Place updated successfully!");
       navigation.goBack();
     } catch (error) {
@@ -117,7 +114,11 @@ export default function EditPlaceScreen({ route, navigation }) {
           <TextInput placeholder="Restaurants" style={styles.input} value={restaurants} onChangeText={setRestaurants} />
 
           <TouchableOpacity style={styles.imagePicker} onPress={handleChooseImage}>
-            {imageUri ? <Image source={{ uri: imageUri }} style={styles.image} /> : <Button title="Choose Image" onPress={handleChooseImage} />}
+            {imageUri ? (
+              <Image source={{ uri: imageUri }} style={styles.image} />
+            ) : (
+              <Button title="Choose Image" onPress={handleChooseImage} />
+            )}
           </TouchableOpacity>
 
           <Button title="Update Place" onPress={handleUpdatePlace} />

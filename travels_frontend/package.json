@@ -26,6 +26,7 @@
     "react-native-maps": "^1.20.1",
     "react-native-screens": "^4.4.0",
     "react-native-web": "~0.19.13",
-    "react-native-web-maps": "^0.3.0"
+    "react-native-web-maps": "^0.3.0",
+    "expo-file-system": "~18.0.10"
   }
 }

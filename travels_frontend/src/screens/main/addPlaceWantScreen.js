@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { 
-  View, TextInput, Button, Alert, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Image, TouchableOpacity, Text
-} from "react-native";
+import { View, TextInput, Button, Alert, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Image, TouchableOpacity, Text } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { addPlace } from "../../utils/api";
 
@@ -44,7 +42,7 @@ export default function AddPlaceWantScreen({ navigation }) {
       quality: 1,
     });
 
-    if (!result.canceled && result.assets.length > 0) {
+    if (!result.canceled && result.assets && result.assets.length > 0) {
       setImageUri(result.assets[0].uri);
     }
   };
@@ -64,11 +62,17 @@ export default function AddPlaceWantScreen({ navigation }) {
         hotels,
         restaurants,
         imageUri,
-        category: "wantToVisit", // 🔥 Only difference from AddPlaceTraveledScreen
+        category: "wantToVisit",
       });
 
       Alert.alert("Success", "Place added successfully!");
-      setName(""); setDescription(""); setAddress(""); setPlans(""); setHotels(""); setRestaurants(""); setImageUri(null);
+      setName("");
+      setDescription("");
+      setAddress("");
+      setPlans("");
+      setHotels("");
+      setRestaurants("");
+      setImageUri(null);
     } catch (error) {
       console.error("Error adding place:", error);
       Alert.alert("Error", "Failed to add place.");
@@ -87,7 +91,11 @@ export default function AddPlaceWantScreen({ navigation }) {
           <TextInput placeholder="Restaurants" style={styles.input} value={restaurants} onChangeText={setRestaurants} />
 
           <TouchableOpacity style={styles.imagePicker} onPress={handleChooseImage}>
-            {imageUri ? <Image source={{ uri: imageUri }} style={styles.image} /> : <Button title="Choose Image" onPress={handleChooseImage} />}
+            {imageUri ? (
+              <Image source={{ uri: imageUri }} style={styles.image} />
+            ) : (
+              <Button title="Choose Image" onPress={handleChooseImage} />
+            )}
           </TouchableOpacity>
 
           <Button title="Add Place" onPress={handleAddPlace} />
