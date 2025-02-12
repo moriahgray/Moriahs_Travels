@@ -29,9 +29,9 @@ export default function PlaceDetails({ route, navigation }) {
     });
   }, [navigation, place]);
 
-  // Navigate to edit screen
+  // Navigate to edit screen with placeId and category
   const handleEdit = () => {
-    navigation.navigate("EditPlace", { place });
+    navigation.navigate("EditPlace", { placeId: place.id, category: place.category });
   };
 
   // Delete the place and handle navigation
@@ -100,52 +100,15 @@ export default function PlaceDetails({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContainer: {
-    padding: 20,
-    paddingBottom: 50,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  description: {
-    fontSize: 16,
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginTop: 20,
-    marginBottom: 5,
-  },
-  content: {
-    fontSize: 16,
-  },
-  image: {
-    width: "100%",
-    height: 200,
-    marginBottom: 10,
-  },
-  showOnMapButton: {
-    backgroundColor: "#28A745",
-    padding: 10,
-    borderRadius: 5,
-    alignItems: "center",
-    marginTop: 20,
-  },
-  showOnMapText: {
-    color: "#fff",
-    fontSize: 16,
-  },
-  headerIcons: {
-    flexDirection: "row",
-    marginRight: 10,
-  },
-  icon: {
-    marginHorizontal: 10,
-  },
+  container: { flex: 1 },
+  scrollContainer: { padding: 20, paddingBottom: 50 },
+  title: { fontSize: 24, fontWeight: "bold", marginBottom: 10 },
+  description: { fontSize: 16, marginBottom: 20 },
+  sectionTitle: { fontSize: 18, fontWeight: "bold", marginTop: 20, marginBottom: 5 },
+  content: { fontSize: 16 },
+  image: { width: "100%", height: 200, marginBottom: 10 },
+  showOnMapButton: { backgroundColor: "#28A745", padding: 10, borderRadius: 5, alignItems: "center", marginTop: 20 },
+  showOnMapText: { color: "#fff", fontSize: 16 },
+  headerIcons: { flexDirection: "row", marginRight: 10 },
+  icon: { marginHorizontal: 10 },
 });
