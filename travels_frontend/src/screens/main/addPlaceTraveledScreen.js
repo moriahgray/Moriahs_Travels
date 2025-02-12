@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { 
-  View, TextInput, Button, Alert, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Image, TouchableOpacity 
+  View, TextInput, Button, Alert, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Image, TouchableOpacity, Text
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { addPlace } from "../../utils/api";
@@ -17,7 +17,13 @@ export default function AddPlaceTraveledScreen({ navigation }) {
   useEffect(() => {
     navigation.setOptions({
       title: "Add Place (Traveled)",
-      headerBackTitle: "Back"
+      headerBackTitle: "Back",
+      headerBackTitleVisible: false,
+      headerLeft: () => (
+        <TouchableOpacity onPress={() => navigation.goBack()} style={{ paddingLeft: 15 }}>
+          <Text style={{ color: "blue", fontSize: 17 }}>Back</Text>
+        </TouchableOpacity>
+      ),
     });
 
     (async () => {
@@ -28,7 +34,7 @@ export default function AddPlaceTraveledScreen({ navigation }) {
         }
       }
     })();
-  }, []);
+  }, [navigation]);
 
   const handleChooseImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({

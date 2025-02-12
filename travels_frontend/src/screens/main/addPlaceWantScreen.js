@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { 
-  View, TextInput, Button, Alert, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Image, TouchableOpacity 
+  View, TextInput, Button, Alert, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Image, TouchableOpacity, Text
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { addPlace } from "../../utils/api";
@@ -17,7 +17,13 @@ export default function AddPlaceWantScreen({ navigation }) {
   useEffect(() => {
     navigation.setOptions({
       title: "Add Place (Want to Visit)",
-      headerBackTitle: "Back"
+      headerBackTitle: "Back",
+      headerBackTitleVisible: false,
+      headerLeft: () => (
+        <TouchableOpacity onPress={() => navigation.goBack()} style={{ paddingLeft: 15 }}>
+          <Text style={{ color: "blue", fontSize: 17 }}>Back</Text>
+        </TouchableOpacity>
+      ),
     });
 
     (async () => {
@@ -28,7 +34,7 @@ export default function AddPlaceWantScreen({ navigation }) {
         }
       }
     })();
-  }, []);
+  }, [navigation]);
 
   const handleChooseImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -58,7 +64,7 @@ export default function AddPlaceWantScreen({ navigation }) {
         hotels,
         restaurants,
         imageUri,
-        category: "wantToVisit",
+        category: "wantToVisit", // 🔥 Only difference from AddPlaceTraveledScreen
       });
 
       Alert.alert("Success", "Place added successfully!");
@@ -90,3 +96,12 @@ export default function AddPlaceWantScreen({ navigation }) {
     </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#fff" },
+  scrollContainer: { flexGrow: 1, padding: 20 },
+  innerContainer: { flexGrow: 1 },
+  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 5, padding: 10, marginBottom: 10, backgroundColor: "#f9f9f9" },
+  imagePicker: { alignItems: "center", justifyContent: "center", marginBottom: 20 },
+  image: { width: 200, height: 200, borderRadius: 10 },
+});

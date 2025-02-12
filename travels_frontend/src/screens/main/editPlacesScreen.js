@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { 
-  View, TextInput, Button, Alert, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Image, TouchableOpacity 
+  View, TextInput, Button, Alert, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Image, TouchableOpacity, Text 
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { updatePlace, getPlaceDetails } from "../../utils/api";
@@ -18,7 +18,13 @@ export default function EditPlaceScreen({ route, navigation }) {
   useEffect(() => {
     navigation.setOptions({ 
       title: "Edit Place",
-      headerBackTitle: "Back"
+      headerBackTitle: "Back",
+      headerBackTitleVisible: false,
+      headerLeft: () => (
+        <TouchableOpacity onPress={() => navigation.goBack()} style={{ paddingLeft: 15 }}>
+          <Text style={{ color: "blue", fontSize: 17 }}>Back</Text>
+        </TouchableOpacity>
+      ),
     });
 
     const loadPlaceDetails = async () => {
@@ -40,7 +46,7 @@ export default function EditPlaceScreen({ route, navigation }) {
     };
 
     loadPlaceDetails();
-  }, [placeId]);
+  }, [placeId, navigation]);
 
   const handleChooseImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({

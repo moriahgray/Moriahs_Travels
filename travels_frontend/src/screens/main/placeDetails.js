@@ -2,64 +2,44 @@ import React, { useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, Image, Alert, TouchableOpacity } from "react-native";
 import { deletePlace } from "../../utils/api";
 import { MaterialIcons } from "@expo/vector-icons";
-import API_URL from "../../utils/api"; // Ensure API_URL is imported
 
 export default function PlaceDetails({ route, navigation }) {
   const { place } = route.params;
 
   useEffect(() => {
-    console.log("Place details:", place); // Debugging: Check if image_uri exists
-    console.log("Full Image URL:", `${API_URL}/uploads/${place.image_uri}`); // Debugging
-
     navigation.setOptions({
-      headerRight: () => (
-        <View style={styles.headerIcons}>
-          <MaterialIcons
-            name="edit"
-            size={30}
-            color="blue"
-            style={styles.icon}
-            onPress={handleEdit}
-          />
-          <MaterialIcons
-            name="delete"
-            size={30}
-            color="red"
-            style={styles.icon}
-            onPress={handleDelete}
-          />
-        </View>
+      title: "Place Details",
+      headerBackTitle: "Back",
+      headerBackTitleVisible: false,
+      headerLeft: () => (
+        <TouchableOpacity onPress={() => navigation.goBack()} style={{ paddingLeft: 15 }}>
+          <Text style={{ color: "blue", fontSize: 17 }}>Back</Text>
+        </TouchableOpacity>
       ),
     });
   }, [navigation, place]);
 
-  // Navigate to edit screen with placeId and category
+  // Navigate to Edit screen
   const handleEdit = () => {
     navigation.navigate("EditPlace", { placeId: place.id, category: place.category });
   };
 
-  // Delete the place and handle navigation
+  // Delete the place
   const handleDelete = async () => {
     Alert.alert(
       "Delete Place",
       `Are you sure you want to delete "${place.title}"?`,
       [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
+        { text: "Cancel", style: "cancel" },
         {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
             try {
-              const result = await deletePlace(place.id);
-              if (result) {
-                Alert.alert("Success", `${place.title} has been deleted.`);
-                navigation.goBack();
-              }
+              await deletePlace(place.id);
+              Alert.alert("Success", `${place.title} has been deleted.`);
+              navigation.goBack();
             } catch (error) {
-              console.error("Error deleting place:", error);
               Alert.alert("Error", "Failed to delete the place.");
             }
           },
@@ -69,37 +49,15 @@ export default function PlaceDetails({ route, navigation }) {
     );
   };
 
-  const handleShowOnMap = () => {
-    navigation.navigate("MapScreen", {
-      latitude: place.latitude,
-      longitude: place.longitude,
-      name: place.title,
-    });
-  };
-
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text style={styles.title}>{place.title}</Text>
         {place.description && <Text style={styles.description}>{place.description}</Text>}
-
-        {/* ✅ FIXED: Ensure Image is Displayed with Full URL */}
-        {place.image_uri ? (
-          <Image
-            source={{ uri: `${API_URL}/uploads/${place.image_uri}` }} // Ensuring full path
-            style={styles.image}
-            onError={(e) => console.log("Image load error:", e.nativeEvent)}
-          />
-        ) : (
-          <View style={styles.imagePlaceholder}>
-            <Text style={styles.noImageText}>No image available</Text>
-          </View>
-        )}
+        {place.imageUri && <Image source={{ uri: place.imageUri }} style={styles.image} />}
 
         <Text style={styles.sectionTitle}>Plans</Text>
-        <Text style={styles.content}>
-          {place.plans ? place.plans.split("; ").join("\n") : "No plans available"}
-        </Text>
+        <Text style={styles.content}>{place.plans || "No plans available"}</Text>
 
         <Text style={styles.sectionTitle}>Hotels</Text>
         <Text style={styles.content}>{place.hotels || "No hotel information available"}</Text>
@@ -107,9 +65,22 @@ export default function PlaceDetails({ route, navigation }) {
         <Text style={styles.sectionTitle}>Restaurants</Text>
         <Text style={styles.content}>{place.restaurants || "No restaurant information available"}</Text>
 
-        <TouchableOpacity style={styles.showOnMapButton} onPress={handleShowOnMap}>
+        <TouchableOpacity style={styles.showOnMapButton} onPress={() => navigation.navigate("MapScreen", { latitude: place.latitude, longitude: place.longitude })}>
           <Text style={styles.showOnMapText}>Show on Map</Text>
         </TouchableOpacity>
+
+        {/* ✅ Add Edit & Delete Buttons Here */}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
+            <MaterialIcons name="edit" size={24} color="white" />
+            <Text style={styles.buttonText}>Edit</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+            <MaterialIcons name="delete" size={24} color="white" />
+            <Text style={styles.buttonText}>Delete</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </View>
   );
@@ -117,24 +88,16 @@ export default function PlaceDetails({ route, navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scrollContainer: { padding: 20, paddingBottom: 50 },
+  scrollContainer: { padding: 20 },
   title: { fontSize: 24, fontWeight: "bold", marginBottom: 10 },
   description: { fontSize: 16, marginBottom: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: "bold", marginTop: 20, marginBottom: 5 },
+  sectionTitle: { fontSize: 18, fontWeight: "bold", marginTop: 20 },
   content: { fontSize: 16 },
-  image: { width: "100%", height: 200, marginBottom: 10, borderRadius: 10 },
-  imagePlaceholder: {
-    width: "100%",
-    height: 200,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#eee",
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  noImageText: { fontSize: 16, color: "#555" },
+  image: { width: "100%", height: 200, marginBottom: 10 },
   showOnMapButton: { backgroundColor: "#28A745", padding: 10, borderRadius: 5, alignItems: "center", marginTop: 20 },
   showOnMapText: { color: "#fff", fontSize: 16 },
-  headerIcons: { flexDirection: "row", marginRight: 10 },
-  icon: { marginHorizontal: 10 },
+  buttonContainer: { flexDirection: "row", justifyContent: "space-between", marginTop: 20 },
+  editButton: { backgroundColor: "#007BFF", flexDirection: "row", alignItems: "center", padding: 10, borderRadius: 5 },
+  deleteButton: { backgroundColor: "#DC3545", flexDirection: "row", alignItems: "center", padding: 10, borderRadius: 5 },
+  buttonText: { color: "white", fontSize: 16, marginLeft: 5 },
 });
