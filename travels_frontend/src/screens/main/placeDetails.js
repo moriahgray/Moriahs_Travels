@@ -2,11 +2,15 @@ import React, { useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, Image, Alert, TouchableOpacity } from "react-native";
 import { deletePlace } from "../../utils/api";
 import { MaterialIcons } from "@expo/vector-icons";
+import API_URL from "../../utils/api"; // Ensure API_URL is imported
 
 export default function PlaceDetails({ route, navigation }) {
   const { place } = route.params;
 
   useEffect(() => {
+    console.log("Place details:", place); // Debugging: Check if image_uri exists
+    console.log("Full Image URL:", `${API_URL}/uploads/${place.image_uri}`); // Debugging
+
     navigation.setOptions({
       headerRight: () => (
         <View style={styles.headerIcons}>
@@ -78,7 +82,19 @@ export default function PlaceDetails({ route, navigation }) {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text style={styles.title}>{place.title}</Text>
         {place.description && <Text style={styles.description}>{place.description}</Text>}
-        {place.imageUri && <Image source={{ uri: place.imageUri }} style={styles.image} />}
+
+        {/* ✅ FIXED: Ensure Image is Displayed with Full URL */}
+        {place.image_uri ? (
+          <Image
+            source={{ uri: `${API_URL}/uploads/${place.image_uri}` }} // Ensuring full path
+            style={styles.image}
+            onError={(e) => console.log("Image load error:", e.nativeEvent)}
+          />
+        ) : (
+          <View style={styles.imagePlaceholder}>
+            <Text style={styles.noImageText}>No image available</Text>
+          </View>
+        )}
 
         <Text style={styles.sectionTitle}>Plans</Text>
         <Text style={styles.content}>
@@ -106,7 +122,17 @@ const styles = StyleSheet.create({
   description: { fontSize: 16, marginBottom: 20 },
   sectionTitle: { fontSize: 18, fontWeight: "bold", marginTop: 20, marginBottom: 5 },
   content: { fontSize: 16 },
-  image: { width: "100%", height: 200, marginBottom: 10 },
+  image: { width: "100%", height: 200, marginBottom: 10, borderRadius: 10 },
+  imagePlaceholder: {
+    width: "100%",
+    height: 200,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#eee",
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  noImageText: { fontSize: 16, color: "#555" },
   showOnMapButton: { backgroundColor: "#28A745", padding: 10, borderRadius: 5, alignItems: "center", marginTop: 20 },
   showOnMapText: { color: "#fff", fontSize: 16 },
   headerIcons: { flexDirection: "row", marginRight: 10 },

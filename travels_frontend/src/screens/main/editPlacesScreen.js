@@ -16,13 +16,10 @@ export default function EditPlaceScreen({ route, navigation }) {
   const [imageUri, setImageUri] = useState(null);
 
   useEffect(() => {
-    navigation.setOptions({ title: "Edit Place" });
-
-    if (!placeId) {
-      console.error("Error: placeId is undefined");
-      Alert.alert("Error", "Invalid Place ID.");
-      return;
-    }
+    navigation.setOptions({ 
+      title: "Edit Place",
+      headerBackTitle: "Back"
+    });
 
     const loadPlaceDetails = async () => {
       try {
@@ -45,27 +42,19 @@ export default function EditPlaceScreen({ route, navigation }) {
     loadPlaceDetails();
   }, [placeId]);
 
-  // Handle Image Selection
   const handleChooseImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permission Denied", "You need to allow access to photos.");
-      return;
-    }
-  
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
     });
-  
+
     if (!result.canceled && result.assets.length > 0) {
       setImageUri(result.assets[0].uri);
     }
-  };  
+  };
 
-  // Handle Place Update
   const handleUpdatePlace = async () => {
     if (!name || !address || !hotels || !restaurants || !plans) {
       Alert.alert("Error", "All fields are required.");
@@ -93,10 +82,7 @@ export default function EditPlaceScreen({ route, navigation }) {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.innerContainer}>
           <TextInput placeholder="Name" style={styles.input} value={name} onChangeText={setName} />
@@ -106,15 +92,8 @@ export default function EditPlaceScreen({ route, navigation }) {
           <TextInput placeholder="Hotels" style={styles.input} value={hotels} onChangeText={setHotels} />
           <TextInput placeholder="Restaurants" style={styles.input} value={restaurants} onChangeText={setRestaurants} />
 
-          {/* Image Picker */}
           <TouchableOpacity style={styles.imagePicker} onPress={handleChooseImage}>
-            {imageUri ? (
-              <Image source={{ uri: imageUri }} style={styles.image} />
-            ) : (
-              <View style={styles.imagePlaceholder}>
-                <Button title="Choose Image" onPress={handleChooseImage} />
-              </View>
-            )}
+            {imageUri ? <Image source={{ uri: imageUri }} style={styles.image} /> : <Button title="Choose Image" onPress={handleChooseImage} />}
           </TouchableOpacity>
 
           <Button title="Update Place" onPress={handleUpdatePlace} />
@@ -128,30 +107,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   scrollContainer: { flexGrow: 1, padding: 20 },
   innerContainer: { flexGrow: 1 },
-  input: { 
-    borderWidth: 1, 
-    borderColor: "#ccc", 
-    borderRadius: 5, 
-    padding: 10, 
-    marginBottom: 10, 
-    backgroundColor: "#f9f9f9" 
-  },
-  imagePicker: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 20,
-  },
-  image: {
-    width: 200,
-    height: 200,
-    borderRadius: 10,
-  },
-  imagePlaceholder: {
-    width: 200,
-    height: 200,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#eee",
-    borderRadius: 10,
-  },
+  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 5, padding: 10, marginBottom: 10, backgroundColor: "#f9f9f9" },
+  imagePicker: { alignItems: "center", justifyContent: "center", marginBottom: 20 },
+  image: { width: 200, height: 200, borderRadius: 10 },
 });
