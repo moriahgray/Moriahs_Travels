@@ -1,3 +1,4 @@
+// mainMenuScreen.js
 import React, { useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { removeToken } from "../../utils/storage";
@@ -6,6 +7,8 @@ export default function MainMenuScreen({ navigation, setIsAuthenticated }) {
   useEffect(() => {
     navigation.setOptions({
       title: "Home",
+      // Remove the default 'Back' button on this screen
+      headerLeft: () => null,
       headerRight: () => (
         <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
           <Text style={styles.logoutText}>Log Out</Text>
@@ -63,6 +66,11 @@ const styles = StyleSheet.create({
     color: "#007BFF",
     textDecorationLine: "underline",
     marginVertical: 10,
+  },
+  logoutButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingRight: 15,
   },
   logoutText: {
     fontSize: 16,

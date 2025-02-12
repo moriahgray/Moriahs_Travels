@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Save data to storage.
+// Save data to storage
 export const saveToStorage = async (key, value) => {
   try {
     await AsyncStorage.setItem(key, JSON.stringify(value));
@@ -9,7 +9,7 @@ export const saveToStorage = async (key, value) => {
   }
 };
 
-// Get data from storage.
+// Get data from storage
 export const getFromStorage = async (key) => {
   try {
     const value = await AsyncStorage.getItem(key);
@@ -20,7 +20,7 @@ export const getFromStorage = async (key) => {
   }
 };
 
-// Remove data from storage.
+// Remove data from storage
 export const removeFromStorage = async (key) => {
   try {
     await AsyncStorage.removeItem(key);
@@ -29,7 +29,17 @@ export const removeFromStorage = async (key) => {
   }
 };
 
-// Clear all storage.
+// Remove token from storage (used for logging out)
+export const removeToken = async () => {
+  try {
+    await AsyncStorage.removeItem("userToken");
+    console.log("User token removed");
+  } catch (error) {
+    console.error("Error removing user token:", error);
+  }
+};
+
+// Clear all storage
 export const clearStorage = async () => {
   try {
     await AsyncStorage.clear();
