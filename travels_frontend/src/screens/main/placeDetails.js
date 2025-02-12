@@ -1,10 +1,12 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, Image, Alert, TouchableOpacity } from "react-native";
 import { deletePlace } from "../../utils/api";
 import { MaterialIcons } from "@expo/vector-icons";
+import * as FileSystem from "expo-file-system";
 
 export default function PlaceDetails({ route, navigation }) {
   const { place } = route.params;
+  const [imageExists, setImageExists] = useState(false);
 
   useEffect(() => {
     navigation.setOptions({
@@ -18,7 +20,18 @@ export default function PlaceDetails({ route, navigation }) {
         </TouchableOpacity>
       ),
     });
+
+    console.log("Loaded place details:", place);
+    checkFileExists(place.image_uri);
   }, [navigation, place]);
+
+  const checkFileExists = async (uri) => {
+    if (uri) {
+      const fileInfo = await FileSystem.getInfoAsync(uri);
+      console.log("File Info:", fileInfo);
+      setImageExists(fileInfo.exists);
+    }
+  };
 
   const handleEdit = () => {
     navigation.navigate("EditPlaceScreen", { placeId: place.id, category: place.category });
@@ -54,11 +67,13 @@ export default function PlaceDetails({ route, navigation }) {
         <Text style={styles.title}>{place.title}</Text>
         {place.description && <Text style={styles.description}>{place.description}</Text>}
 
-        {/* We assume place.imageUri is a local file path like file:///... */}
-        {place.imageUri ? (
-          <Image source={{ uri: place.imageUri }} style={styles.image} />
+        {/* Debugging: Show Image URI */}
+        <Text style={{ color: "red" }}>Image URI: {place.image_uri}</Text>
+
+        {imageExists ? (
+          <Image source={{ uri: place.image_uri }} style={styles.image} />
         ) : (
-          <Image source={require("../../../assets/splash-icon.png")} style={styles.image} />
+          <Text style={{ color: "red", textAlign: "center" }}>Image not found!</Text>
         )}
 
         <Text style={styles.sectionTitle}>Plans</Text>
