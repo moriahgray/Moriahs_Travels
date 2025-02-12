@@ -40,13 +40,21 @@ export const getPlaceDetails = async (placeId) => {
   }
 };
 
-// Add a new place.
 export const addPlace = async (placeData) => {
   try {
     const headers = await getHeaders();
-    console.log("Adding place:", placeData);
+    
+    // Convert "imageUri" to "image_uri" for the backend
+    const formattedData = {
+      ...placeData,
+      image_uri: placeData.imageUri,
+    };
+    delete formattedData.imageUri; 
 
-    const response = await axios.post(`${API_URL}/places`, placeData, { headers });
+    console.log("Final place data sent to backend:", JSON.stringify(formattedData, null, 2));
+
+    const response = await axios.post(`${API_URL}/places`, formattedData, { headers });
+    console.log("Response from server:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error adding place:", error.response?.data || error.message);
@@ -54,13 +62,22 @@ export const addPlace = async (placeData) => {
   }
 };
 
-// Update an existing place.
+
 export const updatePlace = async (placeId, updatedData) => {
   try {
     const headers = await getHeaders();
-    console.log("Updating place:", updatedData); // Debugging
+    
+    // Rename "imageUri" to "image_uri" to match backend expectations
+    const formattedData = {
+      ...updatedData,
+      image_uri: updatedData.imageUri,
+    };
+    delete formattedData.imageUri;
 
-    const response = await axios.put(`${API_URL}/places/${placeId}`, updatedData, { headers });
+    console.log("Final data sent to backend:", JSON.stringify(formattedData, null, 2));
+
+    const response = await axios.put(`${API_URL}/places/${placeId}`, formattedData, { headers });
+    console.log("Response from server:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error updating place:", error.response?.data || error.message);
