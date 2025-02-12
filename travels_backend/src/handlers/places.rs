@@ -237,7 +237,7 @@ pub async fn delete_place(
     })))
 }
 
-// ✅ Updated: Register all routes
+//Register all routes
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::resource("/places")
