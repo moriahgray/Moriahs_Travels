@@ -10,6 +10,7 @@ import MapScreen from "../screens/main/mapScreen";
 import WelcomeScreen from "../screens/auth/welcomeScreen";
 import LoginScreen from "../screens/auth/loginScreen";
 import SignUpScreen from "../screens/auth/signUpScreen";
+import EditPlaceScreen from "../screens/main/editPlacesScreen";
 
 const Stack = createStackNavigator();
 
@@ -35,6 +36,7 @@ export default function AppNavigator({ isAuthenticated, setIsAuthenticated }) {
           <Stack.Screen name="AddPlaceTraveledScreen" component={AddPlacesTraveledScreen} />
           <Stack.Screen name="AddPlaceWantScreen" component={AddPlacesWantScreen} />
           <Stack.Screen name="MapScreen" component={MapScreen} />
+          <Stack.Screen name="EditPlace" component={EditPlaceScreen} />
         </>
       )}
     </Stack.Navigator>

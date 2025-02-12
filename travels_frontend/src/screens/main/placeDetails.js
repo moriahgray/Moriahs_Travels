@@ -9,16 +9,30 @@ export default function PlaceDetails({ route, navigation }) {
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <MaterialIcons
-          name="delete"
-          size={30}
-          color="red"
-          style={styles.deleteIcon}
-          onPress={handleDelete}
-        />
+        <View style={styles.headerIcons}>
+          <MaterialIcons
+            name="edit"
+            size={30}
+            color="blue"
+            style={styles.icon}
+            onPress={handleEdit}
+          />
+          <MaterialIcons
+            name="delete"
+            size={30}
+            color="red"
+            style={styles.icon}
+            onPress={handleDelete}
+          />
+        </View>
       ),
     });
   }, [navigation, place]);
+
+  // Navigate to edit screen
+  const handleEdit = () => {
+    navigation.navigate("EditPlace", { place });
+  };
 
   // Delete the place and handle navigation
   const handleDelete = async () => {
@@ -127,7 +141,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
   },
-  deleteIcon: {
+  headerIcons: {
+    flexDirection: "row",
     marginRight: 10,
+  },
+  icon: {
+    marginHorizontal: 10,
   },
 });

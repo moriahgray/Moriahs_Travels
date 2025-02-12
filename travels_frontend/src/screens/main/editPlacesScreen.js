@@ -55,7 +55,7 @@ export default function EditPlaceScreen({ route, navigation }) {
         hotels,
         restaurants,
         imageUri,
-        category, // Ensures the correct category is retained
+        category,
       });
 
       Alert.alert("Success", "Place updated successfully!");
