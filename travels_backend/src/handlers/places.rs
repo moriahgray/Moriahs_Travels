@@ -30,7 +30,7 @@ pub struct PlaceResponse {
     pub created_at: Option<String>,
 }
 
-// Fetch places from the database
+// Fetch all places from the database (with optional category filter)
 pub async fn get_places(
     pool: web::Data<DbPool>,
     query: web::Query<QueryParams>,
@@ -76,6 +76,49 @@ pub async fn get_places(
     Ok(HttpResponse::Ok().json(places_response))
 }
 
+// ✅ NEW: Fetch a single place by ID
+pub async fn get_place_by_id(
+    pool: web::Data<DbPool>,
+    place_id: web::Path<i32>,
+) -> Result<HttpResponse, actix_web::Error> {
+    let mut conn = pool.get().map_err(|e| {
+        actix_web::error::ErrorInternalServerError(format!("Database connection error: {}", e))
+    })?;
+
+    println!("Fetching place with ID: {}", place_id);
+
+    let place = places::table
+        .filter(places::id.eq(*place_id))
+        .first::<Place>(&mut conn)
+        .optional()
+        .map_err(|_| actix_web::error::ErrorInternalServerError("Failed to fetch place"))?;
+
+    match place {
+        Some(place) => {
+            let response = PlaceResponse {
+                id: place.id,
+                user_id: place.user_id,
+                title: place.title,
+                description: place.description,
+                latitude: place.latitude,
+                longitude: place.longitude,
+                plans: place.plans,
+                category: place.category,
+                hotels: place.hotels,
+                restaurants: place.restaurants,
+                image_uri: place.image_uri,
+                address: place.address,
+                created_at: place.created_at.map(|dt| dt.to_string()),
+            };
+
+            Ok(HttpResponse::Ok().json(response))
+        }
+        None => Ok(HttpResponse::NotFound().json(serde_json::json!({
+            "error": "Place not found"
+        }))),
+    }
+}
+
 // Add a new place
 pub async fn add_place(
     pool: web::Data<DbPool>,
@@ -99,7 +142,7 @@ pub async fn add_place(
     })))
 }
 
-//Update Place Request with Debug Trait
+// ✅ Define UpdatePlaceRequest Struct
 #[derive(Debug, Deserialize)]
 pub struct UpdatePlaceRequest {
     pub title: Option<String>,
@@ -113,8 +156,10 @@ pub struct UpdatePlaceRequest {
     pub image_uri: Option<String>,
     pub address: Option<String>,
 }
+
+// ✅ Define PlaceUpdate Struct for Diesel
 #[derive(AsChangeset)]
-#[diesel(table_name = places)] // ✅ Correct usage
+#[diesel(table_name = places)] 
 struct PlaceUpdate<'a> {
     title: Option<&'a str>,
     description: Option<&'a str>,
@@ -128,7 +173,7 @@ struct PlaceUpdate<'a> {
     address: Option<&'a str>,
 }
 
-// **✅ FIXED: Update Function That Works Correctly**
+// ✅ Updated: Update a place
 pub async fn update_place(
     pool: web::Data<DbPool>,
     place_id: web::Path<i32>,
@@ -164,8 +209,7 @@ pub async fn update_place(
         "message": "Place updated successfully"
     })))
 }
-
-// Delete a place
+// ✅ Function to Delete a Place
 pub async fn delete_place(
     pool: web::Data<DbPool>,
     place_id: web::Path<i32>,
@@ -176,18 +220,24 @@ pub async fn delete_place(
 
     println!("Deleting place ID: {}", place_id);
 
-    diesel::delete(places::table.filter(places::id.eq(*place_id)))
+    let deleted_rows = diesel::delete(places::table.filter(places::id.eq(*place_id)))
         .execute(&mut conn)
         .map_err(|err| {
             actix_web::error::ErrorInternalServerError(format!("Failed to delete place: {}", err))
         })?;
+
+    if deleted_rows == 0 {
+        return Ok(HttpResponse::NotFound().json(serde_json::json!({
+            "error": "Place not found"
+        })));
+    }
 
     Ok(HttpResponse::Ok().json(serde_json::json!({
         "message": "Place deleted successfully"
     })))
 }
 
-// Register routes
+// ✅ Updated: Register all routes
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::resource("/places")
@@ -196,6 +246,7 @@ pub fn init_routes(cfg: &mut web::ServiceConfig) {
     )
     .service(
         web::resource("/places/{id}")
+            .route(web::get().to(get_place_by_id)) 
             .route(web::put().to(update_place))
             .route(web::delete().to(delete_place)),
     );
