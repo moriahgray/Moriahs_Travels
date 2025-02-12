@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { View, FlatList, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import { View, FlatList, Text, Button, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { getPlaces } from "../../utils/api";
 
 export default function WantToTravel({ navigation }) {
   const [locations, setLocations] = useState([]);
 
   useEffect(() => {
-        navigation.setOptions({
-          title: "Where She Wants To Go",
-          headerBackTitle: "Back", 
-        });
+    navigation.setOptions({
+      title: "Places She Wants to Visit",
+      headerBackTitle: "Back", 
+    });
+
     const loadPlaces = async () => {
       try {
-        // ✅ Use getPlaces instead of fetchPlaces
         const places = await getPlaces("wantToTravel");
         console.log("Fetched places for WantToTravel:", places);
         setLocations(places);
@@ -20,10 +20,10 @@ export default function WantToTravel({ navigation }) {
         console.error("Error fetching places:", error);
         Alert.alert("Error", "Failed to load places.");
       }
-    };    
+    };
 
     loadPlaces();
-  }, []);
+  }, [navigation]);
 
   return (
     <View style={styles.container}>
@@ -36,7 +36,7 @@ export default function WantToTravel({ navigation }) {
               style={styles.button}
               onPress={() => navigation.navigate("PlaceDetails", { place: item })}
             >
-              <Text style={styles.buttonText}>Take me there!</Text>
+              <Text style={styles.buttonText}>Explore</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -47,7 +47,7 @@ export default function WantToTravel({ navigation }) {
         style={styles.addButton}
         onPress={() => navigation.navigate("AddPlaceWantScreen", { category: "wantToTravel" })}
       >
-        <Text style={styles.addButtonText}>Send Her Somewhere!</Text>
+        <Text style={styles.addButtonText}>Add a Dream Destination!</Text>
       </TouchableOpacity>
     </View>
   );
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   button: {
-    backgroundColor: "#28A745",
+    backgroundColor: "#FFA500",
     padding: 10,
     borderRadius: 5,
     alignItems: "center",

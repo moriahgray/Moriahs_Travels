@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import {
-  View, TextInput, Button, Alert, StyleSheet, FlatList, TouchableOpacity,
+import { 
+  View, TextInput, Button, Alert, StyleSheet, FlatList, TouchableOpacity, 
   Text, ScrollView, KeyboardAvoidingView, Platform, Modal, Image
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { addPlace } from "../../utils/api";
 
 export default function AddPlaceTraveledScreen({ navigation }) {
   const [name, setName] = useState("");
@@ -14,19 +15,24 @@ export default function AddPlaceTraveledScreen({ navigation }) {
   const [hotels, setHotels] = useState("");
   const [restaurants, setRestaurants] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
-  const [customImageName, setCustomImageName] = useState("");
+  const [customImageName, setCustomImageName] = useState(""); 
   const [modalVisible, setModalVisible] = useState(false);
   const [tempImageUri, setTempImageUri] = useState(null);
 
   useEffect(() => {
-    if (Platform.OS !== "web") {
-      (async () => {
+    navigation.setOptions({
+      title: "Place She Visited",
+      headerBackTitle: "Back",
+    });
+
+    (async () => {
+      if (Platform.OS !== "web") {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== "granted") {
           Alert.alert("Permission Denied", "Please grant permission to access photos.");
         }
-      })();
-    }
+      }
+    })();
   }, []);
 
   const handleAddPlan = () => {
@@ -35,13 +41,22 @@ export default function AddPlaceTraveledScreen({ navigation }) {
       return;
     }
     setPlans([...plans, currentPlan.trim()]);
-    setCurrentPlan("");
+    setCurrentPlan(""); 
+  };
+
+  const handleDeletePlan = (index) => {
+    setPlans(plans.filter((_, i) => i !== index));
   };
 
   const pickImage = async () => {
+    if (selectedImage) {
+      Alert.alert("Action Required", "Please remove the existing image before selecting a new one.");
+      return;
+    }
+
     try {
       let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ImagePicker.MediaType.Image,
         allowsEditing: true,
         quality: 1,
       });
@@ -52,12 +67,6 @@ export default function AddPlaceTraveledScreen({ navigation }) {
       }
 
       const imageUri = result.assets[0].uri;
-
-      if (Platform.OS === "web" || Platform.OS === "android") {
-        setTempImageUri(imageUri);
-        setModalVisible(true); // ✅ Ensuring modal is properly opened
-        return;
-      }
 
       if (Platform.OS === "ios") {
         Alert.prompt(
@@ -79,6 +88,9 @@ export default function AddPlaceTraveledScreen({ navigation }) {
           ],
           "plain-text"
         );
+      } else {
+        setTempImageUri(imageUri);
+        setModalVisible(true);
       }
     } catch (error) {
       console.error("Error picking image: ", error);
@@ -92,7 +104,7 @@ export default function AddPlaceTraveledScreen({ navigation }) {
       return;
     }
     setSelectedImage(tempImageUri);
-    setModalVisible(false); // ✅ Ensuring modal properly closes
+    setModalVisible(false);
   };
 
   const handleRemoveImage = () => {
@@ -100,34 +112,38 @@ export default function AddPlaceTraveledScreen({ navigation }) {
     setCustomImageName("");
   };
 
-  const handleAddPlace = () => {
-    if (!name || !address || !hotels || !restaurants || plans.length === 0 || !selectedImage) {
-      Alert.alert("Error", "All fields and an image are required.");
+  const handleAddPlace = async () => {
+    if (!name || !address || !hotels || !restaurants || plans.length === 0) {
+      Alert.alert("Error", "All fields are required.");
       return;
     }
 
-    if (selectedImage && !customImageName.trim()) {
-      Alert.alert("Error", "Please enter a name for the image.");
-      return;
+    try {
+      await addPlace({
+        name,
+        description,
+        address,
+        plans: plans.join("; "),
+        hotels,
+        restaurants,
+        imageUri: selectedImage, 
+        imageName: customImageName,
+        category: "traveled",
+      });
+
+      Alert.alert("Success", "Place added successfully!");
+      navigation.goBack();
+    } catch (error) {
+      console.error("Error adding place:", error);
+      Alert.alert("Error", "Failed to add place.");
     }
-
-    console.log({
-      name,
-      description,
-      address,
-      plans: plans.join("; "),
-      hotels,
-      restaurants,
-      imageUri: selectedImage,
-      imageName: customImageName,
-    });
-
-    Alert.alert("Success", "Place added successfully!");
-    navigation.goBack();
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+    <KeyboardAvoidingView 
+      style={styles.container} 
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
       <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
         <View style={styles.innerContainer}>
           <TextInput placeholder="Name" style={styles.input} value={name} onChangeText={setName} />
@@ -136,34 +152,31 @@ export default function AddPlaceTraveledScreen({ navigation }) {
           <TextInput placeholder="Hotels" style={styles.input} value={hotels} onChangeText={setHotels} />
           <TextInput placeholder="Restaurants" style={styles.input} value={restaurants} onChangeText={setRestaurants} />
 
-          {/* ✅ "Add Plan" Button Now Works */}
           <View style={styles.planInputContainer}>
-            <TextInput
-              placeholder="Add a plan"
-              style={[styles.input, { flex: 1 }]}
-              value={currentPlan}
-              onChangeText={setCurrentPlan}
+            <TextInput 
+              placeholder="Add a plan" 
+              style={[styles.input, { flex: 1 }]} 
+              value={currentPlan} 
+              onChangeText={setCurrentPlan} 
             />
             <TouchableOpacity style={styles.addButton} onPress={handleAddPlan}>
               <Text style={styles.addButtonText}>+</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Plans List */}
           <FlatList
             data={plans}
             renderItem={({ item, index }) => (
               <View style={styles.planItemContainer}>
-                <TouchableOpacity onPress={() => setPlans(plans.filter((_, i) => i !== index))}>
+                <Text style={styles.planItem}>{item}</Text>
+                <TouchableOpacity onPress={() => handleDeletePlan(index)}>
                   <Text style={styles.deletePlanButton}>X</Text>
                 </TouchableOpacity>
-                <Text style={styles.planItem}>{item}</Text>
               </View>
             )}
             keyExtractor={(item, index) => index.toString()}
           />
 
-          {/* Show "Choose Image" button only if no image is selected */}
           {!selectedImage && (
             <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
               <Text style={styles.imagePickerText}>📷 Choose Image (Optional)</Text>
@@ -180,23 +193,6 @@ export default function AddPlaceTraveledScreen({ navigation }) {
             </View>
           )}
 
-          <Modal visible={modalVisible} animationType="slide" transparent={true}>
-            <View style={styles.modalOverlay}> 
-              <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>Name Your Image</Text>
-                <TextInput
-                  placeholder="Enter image name"
-                  style={styles.modalInput}
-                  value={customImageName}
-                  onChangeText={setCustomImageName}
-                />
-                <TouchableOpacity style={styles.modalButton} onPress={handleConfirmImageName}>
-                  <Text style={styles.modalButtonText}>CONFIRM</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Modal>
-
           <Button title="Add Place" onPress={handleAddPlace} />
         </View>
       </ScrollView>
@@ -205,23 +201,13 @@ export default function AddPlaceTraveledScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container:{flex:1,backgroundColor:"#fff"},
-  scrollContainer:{flexGrow:1,padding:20,paddingBottom:50},
-  input:{borderWidth:1,borderColor:"#ccc",borderRadius:5,padding:10,marginBottom:10},
-  planInputContainer:{flexDirection:"row",alignItems:"center",marginBottom:10},
-  addButton:{backgroundColor:"green",padding:10,borderRadius:5,marginLeft:10,alignItems:"center",justifyContent:"center"},
-  addButtonText:{color:"white",fontSize:16,fontWeight:"bold"},
-  deletePlanButton:{color:"red",fontSize:18,marginRight:10},
-  imagePickerButton:{backgroundColor:"#007BFF",padding:12,borderRadius:5,alignItems:"center",marginVertical:10},
-  imagePickerText:{color:"white",fontSize:16,fontWeight:"bold"},
-  imageNameContainer:{flexDirection:"column",alignItems:"center",marginTop:10},
-  imagePreview:{width:100,height:100,borderRadius:10,marginTop:10},
-  imageNameText:{fontSize:16,marginTop:5},
-  deleteImageText:{color:"red",fontSize:18,marginTop:5},
-  modalContainer:{flex:1,justifyContent:"center",alignItems:"center",backgroundColor:"rgba(0,0,0,0.5)"},
-  modalContent:{backgroundColor:"#fff",padding:20,width:"80%",borderRadius:10,alignItems:"center"},
-  modalTitle:{fontSize:18,fontWeight:"bold",marginBottom:10,textAlign:"center"},
-  modalInput:{width:"100%",borderWidth:1,borderColor:"#ccc",borderRadius:5,padding:10,marginBottom:15,fontSize:16},
-  modalButton:{backgroundColor:"#007BFF",paddingVertical:12,paddingHorizontal:20,borderRadius:5,alignItems:"center",width:"100%"},
-  modalButtonText:{color:"white",fontSize:16,fontWeight:"bold",textAlign:"center"}
+  container: { flex: 1, backgroundColor: "#fff" },
+  scrollContainer: { flexGrow: 1, padding: 20, paddingBottom: 50 },
+  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 5, padding: 10, marginBottom: 10 },
+  planInputContainer: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
+  addButton: { backgroundColor: "green", paddingVertical: 5, paddingHorizontal: 10, borderRadius: 5, marginLeft: 10, alignItems: "center", justifyContent: "center" },
+  addButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
+  deletePlanButton: { color: "red", fontSize: 18, marginRight: 10 },
+  imagePickerButton: { backgroundColor: "#007BFF", padding: 10, borderRadius: 5, alignItems: "center", marginVertical: 8, width: "80%", alignSelf: 'center' },
+  imagePickerText: { color: "white", fontSize: 14, fontWeight: "bold" },
 });
