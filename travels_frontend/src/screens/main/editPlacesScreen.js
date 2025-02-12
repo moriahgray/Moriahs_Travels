@@ -52,18 +52,18 @@ export default function EditPlaceScreen({ route, navigation }) {
       Alert.alert("Permission Denied", "You need to allow access to photos.");
       return;
     }
-
+  
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
     });
-
-    if (!result.cancelled) {
-      setImageUri(result.uri);
+  
+    if (!result.canceled && result.assets.length > 0) {
+      setImageUri(result.assets[0].uri);
     }
-  };
+  };  
 
   // Handle Place Update
   const handleUpdatePlace = async () => {

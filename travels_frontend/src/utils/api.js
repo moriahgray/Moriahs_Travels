@@ -32,7 +32,7 @@ export const getPlaces = async (category) => {
 export const getPlaceDetails = async (placeId) => {
   try {
     const headers = await getHeaders();
-    const response = await axios.post(`${API_URL}/places/details`, { id: placeId }, { headers });
+    const response = await axios.get(`${API_URL}/places/${placeId}`, { headers });
     return response.data;
   } catch (error) {
     console.error("Error fetching place details:", error.response?.data || error.message);
@@ -44,7 +44,7 @@ export const getPlaceDetails = async (placeId) => {
 export const addPlace = async (placeData) => {
   try {
     const headers = await getHeaders();
-    console.log("Adding place:", placeData); // Debugging
+    console.log("Adding place:", placeData);
 
     const response = await axios.post(`${API_URL}/places`, placeData, { headers });
     return response.data;
