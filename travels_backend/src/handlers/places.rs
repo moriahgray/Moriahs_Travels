@@ -99,7 +99,7 @@ pub async fn add_place(
     })))
 }
 
-// **✅ FIXED: Update Place Request with Debug Trait**
+//Update Place Request with Debug Trait
 #[derive(Debug, Deserialize)]
 pub struct UpdatePlaceRequest {
     pub title: Option<String>,
