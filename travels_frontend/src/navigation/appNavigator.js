@@ -1,3 +1,4 @@
+// appNavigator.js
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import { TouchableOpacity, Text } from "react-native";
@@ -21,6 +22,8 @@ import WantToTravel from "../screens/main/wantToTravel";
 const Stack = createStackNavigator();
 
 export default function AppNavigator({ isAuthenticated, setIsAuthenticated }) {
+  console.log("AppNavigator - isAuthenticated:", isAuthenticated);
+
   return (
     <Stack.Navigator
       screenOptions={({ navigation }) => ({
@@ -34,7 +37,7 @@ export default function AppNavigator({ isAuthenticated, setIsAuthenticated }) {
           </TouchableOpacity>
         ),
         headerBackTitleVisible: false,
-        headerTitle: "", // ✅ Removes titles
+        headerTitle: "",
       })}
     >
       {!isAuthenticated ? (
@@ -47,15 +50,19 @@ export default function AppNavigator({ isAuthenticated, setIsAuthenticated }) {
         </>
       ) : (
         <>
-          {/* Main App Screens */}
-          <Stack.Screen name="MainMenu" component={MainMenuScreen} />
-          <Stack.Screen name="MapScreen" component={MapScreen} />
-          <Stack.Screen name="PlaceDetails" component={PlaceDetails} />
-          <Stack.Screen name="AddPlaceTraveled" component={AddPlaceTraveledScreen} />
-          <Stack.Screen name="AddPlaceWant" component={AddPlaceWantScreen} />
-          <Stack.Screen name="EditPlace" component={EditPlaceScreen} />
-          <Stack.Screen name="TraveledTo" component={TraveledTo} />
-          <Stack.Screen name="WantToTravel" component={WantToTravel} />
+          <Stack.Screen name="MainMenuScreen">
+            {(props) => {
+              console.log("Navigating to MainMenuScreen");
+              return <MainMenuScreen {...props} />;
+            }}
+          </Stack.Screen>
+          <Stack.Screen name="MapScreen">{(props) => <MapScreen {...props} />}</Stack.Screen>
+          <Stack.Screen name="PlaceDetails">{(props) => <PlaceDetails {...props} />}</Stack.Screen>
+          <Stack.Screen name="AddPlaceTraveledScreen">{(props) => <AddPlaceTraveledScreen {...props} />}</Stack.Screen>
+          <Stack.Screen name="AddPlaceWantScreen">{(props) => <AddPlaceWantScreen {...props} />}</Stack.Screen>
+          <Stack.Screen name="EditPlaceScreen">{(props) => <EditPlaceScreen {...props} />}</Stack.Screen>
+          <Stack.Screen name="TraveledTo">{(props) => <TraveledTo {...props} />}</Stack.Screen>
+          <Stack.Screen name="WantToTravel">{(props) => <WantToTravel {...props} />}</Stack.Screen>
         </>
       )}
     </Stack.Navigator>

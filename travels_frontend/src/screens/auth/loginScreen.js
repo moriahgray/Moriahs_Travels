@@ -12,17 +12,18 @@ export default function LoginScreen({ navigation, setIsAuthenticated }) {
     setIsLoading(true);
     try {
       const data = await login({ email, password });
-
       if (data.token) {
         await saveToStorage("jwtToken", data.token);
         console.log("Login successful, token saved.");
-
-        // Update authentication state
+  
+        // Update authentication state first
         setIsAuthenticated(true);
-
-        // Navigate to MainMenu (corrected navigation name)
-        navigation.navigate("MainMenu");
-
+  
+        // Wait a bit for the state to update before navigating
+        setTimeout(() => {
+          console.log("Navigating to MainMenuScreen...");
+          navigation.navigate("MainMenuScreen");
+        }, 100);
       } else {
         Alert.alert("Login Error", "Invalid credentials. Please try again.");
       }

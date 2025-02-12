@@ -55,8 +55,6 @@ export default function PlaceDetails({ route, navigation }) {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text style={styles.title}>{place.title}</Text>
         {place.description && <Text style={styles.description}>{place.description}</Text>}
-
-        {/* ✅ FIX: Properly check for image source */}
         {place.imageUri || place.image_uri ? (
           <Image source={{ uri: place.imageUri || place.image_uri }} style={styles.image} />
         ) : (
