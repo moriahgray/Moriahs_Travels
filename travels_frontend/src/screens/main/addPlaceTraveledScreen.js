@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, TextInput, Button, Alert, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Image, TouchableOpacity, Text } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
 import { addPlace } from "../../utils/api";
 
 export default function AddPlaceTraveledScreen({ navigation }) {
@@ -43,7 +44,25 @@ export default function AddPlaceTraveledScreen({ navigation }) {
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      setImageUri(result.assets[0].uri);
+      try {
+        // Original picked URI
+        const pickedUri = result.assets[0].uri;
+
+        // Create a filename
+        const fileName = pickedUri.split("/").pop() || `image_${Date.now()}.jpg`;
+        const localFolder = `${FileSystem.documentDirectory}myImages/`;
+        await FileSystem.makeDirectoryAsync(localFolder, { intermediates: true });
+        const newPath = `${localFolder}${fileName}`;
+
+        // Copy from the picked file to our app's local storage
+        await FileSystem.copyAsync({ from: pickedUri, to: newPath });
+
+        // Save that local path
+        setImageUri(newPath);
+      } catch (err) {
+        console.error("Error copying file:", err);
+        Alert.alert("Error", "Failed to save image locally.");
+      }
     }
   };
 
@@ -61,7 +80,7 @@ export default function AddPlaceTraveledScreen({ navigation }) {
         plans,
         hotels,
         restaurants,
-        imageUri,
+        imageUri, // local path
         category: "traveled",
       });
 

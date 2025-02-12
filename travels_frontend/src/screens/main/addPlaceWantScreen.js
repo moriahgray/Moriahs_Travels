@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, TextInput, Button, Alert, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Image, TouchableOpacity, Text } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
 import { addPlace } from "../../utils/api";
 
 export default function AddPlaceWantScreen({ navigation }) {
@@ -43,7 +44,19 @@ export default function AddPlaceWantScreen({ navigation }) {
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      setImageUri(result.assets[0].uri);
+      try {
+        const pickedUri = result.assets[0].uri;
+        const fileName = pickedUri.split("/").pop() || `image_${Date.now()}.jpg`;
+        const localFolder = `${FileSystem.documentDirectory}myImages/`;
+        await FileSystem.makeDirectoryAsync(localFolder, { intermediates: true });
+        const newPath = `${localFolder}${fileName}`;
+
+        await FileSystem.copyAsync({ from: pickedUri, to: newPath });
+        setImageUri(newPath);
+      } catch (err) {
+        console.error("Error copying file:", err);
+        Alert.alert("Error", "Failed to save image locally.");
+      }
     }
   };
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, TextInput, Button, Alert, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Image, TouchableOpacity, Text } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
 import { updatePlace, getPlaceDetails } from "../../utils/api";
 
 export default function EditPlaceScreen({ route, navigation }) {
@@ -29,7 +30,6 @@ export default function EditPlaceScreen({ route, navigation }) {
       try {
         const place = await getPlaceDetails(placeId);
         if (place) {
-          // now we assume the server returns place.imageUri consistently
           setName(place.title || "");
           setDescription(place.description || "");
           setAddress(place.address || "");
@@ -56,7 +56,19 @@ export default function EditPlaceScreen({ route, navigation }) {
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      setImageUri(result.assets[0].uri);
+      try {
+        const pickedUri = result.assets[0].uri;
+        const fileName = pickedUri.split("/").pop() || `image_${Date.now()}.jpg`;
+        const localFolder = `${FileSystem.documentDirectory}myImages/`;
+        await FileSystem.makeDirectoryAsync(localFolder, { intermediates: true });
+        const newPath = `${localFolder}${fileName}`;
+
+        await FileSystem.copyAsync({ from: pickedUri, to: newPath });
+        setImageUri(newPath);
+      } catch (err) {
+        console.error("Error copying file:", err);
+        Alert.alert("Error", "Failed to save image locally.");
+      }
     }
   };
 
@@ -67,33 +79,20 @@ export default function EditPlaceScreen({ route, navigation }) {
     }
 
     try {
-      const formData = new FormData();
-      formData.append("title", name);
-      formData.append("description", description);
-      formData.append("address", address);
-      formData.append("plans", plans);
-      formData.append("hotels", hotels);
-      formData.append("restaurants", restaurants);
-      formData.append("category", category);
+      const updatedPlaceData = {
+        title: name,
+        description,
+        address,
+        plans,
+        hotels,
+        restaurants,
+        category,
+        imageUri, // local path
+      };
 
-      // if a new image was selected, append to form
-      if (imageUri) {
-        const filename = imageUri.split("/").pop();
-        const match = /\.(\w+)$/.exec(filename || "");
-        const type = match ? `image/${match[1]}` : "image";
-
-        formData.append("image", {
-          uri: imageUri,
-          name: filename,
-          type,
-        });
-      }
-
-      const response = await updatePlace(placeId, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
+      const response = await updatePlace(placeId, updatedPlaceData);
       console.log("API Response:", response);
+
       Alert.alert("Success", "Place updated successfully!");
       navigation.goBack();
     } catch (error) {

@@ -54,6 +54,7 @@ export default function PlaceDetails({ route, navigation }) {
         <Text style={styles.title}>{place.title}</Text>
         {place.description && <Text style={styles.description}>{place.description}</Text>}
 
+        {/* We assume place.imageUri is a local file path like file:///... */}
         {place.imageUri ? (
           <Image source={{ uri: place.imageUri }} style={styles.image} />
         ) : (
