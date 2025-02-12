@@ -60,7 +60,7 @@ export default function PlaceDetails({ route, navigation }) {
         {place.imageUri || place.image_uri ? (
           <Image source={{ uri: place.imageUri || place.image_uri }} style={styles.image} />
         ) : (
-          <Image source={require("../../assets/placeholder.jpg")} style={styles.image} />
+          <Image source={require("../../assets/splash-icon.jpg")} style={styles.image} />
         )}
 
         <Text style={styles.sectionTitle}>Plans</Text>
