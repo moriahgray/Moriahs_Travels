@@ -57,6 +57,7 @@ export default function EditPlaceScreen({ route, navigation }) {
     });
 
     if (!result.canceled && result.assets.length > 0) {
+      console.log("Selected image:", result.assets[0].uri);
       setImageUri(result.assets[0].uri);
     }
   };
@@ -68,16 +69,33 @@ export default function EditPlaceScreen({ route, navigation }) {
     }
 
     try {
-      await updatePlace(placeId, {
-        title: name,
-        description,
-        address,
-        plans,
-        hotels,
-        restaurants,
-        imageUri,
-        category,
+      const formData = new FormData();
+      formData.append("title", name);
+      formData.append("description", description);
+      formData.append("address", address);
+      formData.append("plans", plans);
+      formData.append("hotels", hotels);
+      formData.append("restaurants", restaurants);
+      formData.append("category", category);
+
+      // Append the image file if a new one was selected
+      if (imageUri) {
+        const filename = imageUri.split("/").pop();
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : "image";
+
+        formData.append("image", {
+          uri: imageUri,
+          name: filename,
+          type,
+        });
+      }
+
+      const response = await updatePlace(placeId, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
+
+      console.log("API Response:", response);
 
       Alert.alert("Success", "Place updated successfully!");
       navigation.goBack();

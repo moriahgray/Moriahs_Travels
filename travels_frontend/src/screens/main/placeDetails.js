@@ -22,7 +22,7 @@ export default function PlaceDetails({ route, navigation }) {
 
   // Navigate to Edit screen
   const handleEdit = () => {
-    navigation.navigate("EditPlace", { placeId: place.id, category: place.category });
+    navigation.navigate("EditPlaceScreen", { placeId: place.id, category: place.category });
   };
 
   // Delete the place
