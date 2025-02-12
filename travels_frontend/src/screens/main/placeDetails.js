@@ -13,7 +13,8 @@ export default function PlaceDetails({ route, navigation }) {
       headerBackTitleVisible: false,
       headerLeft: () => (
         <TouchableOpacity onPress={() => navigation.goBack()} style={{ paddingLeft: 15 }}>
-          <Text style={{ color: "blue", fontSize: 17 }}>Back</Text>
+          <MaterialIcons name="arrow-back" size={24} color="blue" />
+          <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
       ),
     });
@@ -54,7 +55,13 @@ export default function PlaceDetails({ route, navigation }) {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text style={styles.title}>{place.title}</Text>
         {place.description && <Text style={styles.description}>{place.description}</Text>}
-        {place.imageUri && <Image source={{ uri: place.imageUri }} style={styles.image} />}
+
+        {/* ✅ FIX: Properly check for image source */}
+        {place.imageUri || place.image_uri ? (
+          <Image source={{ uri: place.imageUri || place.image_uri }} style={styles.image} />
+        ) : (
+          <Image source={require("../../assets/placeholder.jpg")} style={styles.image} />
+        )}
 
         <Text style={styles.sectionTitle}>Plans</Text>
         <Text style={styles.content}>{place.plans || "No plans available"}</Text>
@@ -69,7 +76,7 @@ export default function PlaceDetails({ route, navigation }) {
           <Text style={styles.showOnMapText}>Show on Map</Text>
         </TouchableOpacity>
 
-        {/* ✅ Add Edit & Delete Buttons Here */}
+        {/* ✅ Edit & Delete Buttons */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
             <MaterialIcons name="edit" size={24} color="white" />
@@ -93,11 +100,12 @@ const styles = StyleSheet.create({
   description: { fontSize: 16, marginBottom: 20 },
   sectionTitle: { fontSize: 18, fontWeight: "bold", marginTop: 20 },
   content: { fontSize: 16 },
-  image: { width: "100%", height: 200, marginBottom: 10 },
+  image: { width: "100%", height: 250, borderRadius: 10, marginBottom: 10, resizeMode: "cover" },
   showOnMapButton: { backgroundColor: "#28A745", padding: 10, borderRadius: 5, alignItems: "center", marginTop: 20 },
   showOnMapText: { color: "#fff", fontSize: 16 },
   buttonContainer: { flexDirection: "row", justifyContent: "space-between", marginTop: 20 },
   editButton: { backgroundColor: "#007BFF", flexDirection: "row", alignItems: "center", padding: 10, borderRadius: 5 },
   deleteButton: { backgroundColor: "#DC3545", flexDirection: "row", alignItems: "center", padding: 10, borderRadius: 5 },
   buttonText: { color: "white", fontSize: 16, marginLeft: 5 },
+  backText: { fontSize: 17, color: "blue", marginLeft: 5 },
 });
