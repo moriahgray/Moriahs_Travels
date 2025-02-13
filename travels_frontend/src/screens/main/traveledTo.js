@@ -8,7 +8,6 @@ export default function TraveledTo({ navigation }) {
   const loadPlaces = async () => {
     try {
       const places = await getPlaces("traveled");
-      console.log("📡 Fetched places for TraveledTo:", places);
       setLocations(places);
     } catch (error) {
       console.error("Error fetching places:", error);

@@ -29,13 +29,13 @@ export const removeFromStorage = async (key) => {
   }
 };
 
-// Remove token from storage (used for logging out)
+// Remove authentication token
 export const removeToken = async () => {
   try {
-    await AsyncStorage.removeItem("userToken");
-    console.log("User token removed");
+    await AsyncStorage.removeItem("token");
+    console.log("Authentication token removed.");
   } catch (error) {
-    console.error("Error removing user token:", error);
+    console.error("Error removing authentication token:", error);
   }
 };
 

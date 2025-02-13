@@ -7,7 +7,9 @@ const getHeaders = async () => {
   const token = await getFromStorage("token");
 
   if (!token) {
-    console.warn("No token found. User might not be authenticated.");
+    console.warn("Authentication token not found. User may not be logged in.");
+  } else {
+    console.log("Retrieved token:", token);
   }
 
   return {
@@ -45,21 +47,21 @@ export const getPlaceDetails = async (placeId) => {
   }
 };
 
-// ✅ Add place (No `user_id` or `uuid` in frontend)
+// Add place
 export const addPlace = async (placeData) => {
   try {
     const headers = await getHeaders();
-    
+
     const formattedData = {
       ...placeData,
-      image_uri: placeData.imageUri, // Rename for backend compatibility
+      image_uri: placeData.imageUri,
     };
     delete formattedData.imageUri;
 
-    console.log("Final place data sent to backend:", JSON.stringify(formattedData, null, 2));
+    console.log("Sending place data to backend:", JSON.stringify(formattedData, null, 2));
 
     const response = await axios.post(`${API_URL}/places`, formattedData, { headers });
-    console.log("Response from server:", response.data);
+    console.log("Place added successfully:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error adding place:", error.response?.data || error.message);
@@ -67,21 +69,21 @@ export const addPlace = async (placeData) => {
   }
 };
 
-// ✅ Update place (No `user_id` or `uuid` in frontend)
+// Update place
 export const updatePlace = async (placeId, updatedData) => {
   try {
     const headers = await getHeaders();
-    
+
     const formattedData = {
       ...updatedData,
-      image_uri: updatedData.imageUri, // Rename for backend compatibility
+      image_uri: updatedData.imageUri,
     };
     delete formattedData.imageUri;
 
-    console.log("Final data sent to backend:", JSON.stringify(formattedData, null, 2));
+    console.log("Sending updated place data to backend:", JSON.stringify(formattedData, null, 2));
 
     const response = await axios.put(`${API_URL}/places/${placeId}`, formattedData, { headers });
-    console.log("Response from server:", response.data);
+    console.log("Place updated successfully:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error updating place:", error.response?.data || error.message);
@@ -89,11 +91,13 @@ export const updatePlace = async (placeId, updatedData) => {
   }
 };
 
-// ✅ Delete a place by ID
+// Delete a place
 export const deletePlace = async (placeId) => {
   try {
     const headers = await getHeaders();
+
     const response = await axios.delete(`${API_URL}/places/${placeId}`, { headers });
+    console.log("Place deleted successfully:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error deleting place:", error.response?.data || error.message);
@@ -118,12 +122,12 @@ export const login = async (credentials) => {
 // Sign up a new user
 export const signup = async (userData) => {
   try {
-    console.log("Signing up with data:", userData);
+    console.log("Registering new user:", userData);
     const response = await axios.post(`${API_URL}/auth/register`, userData, {
       headers: { "Content-Type": "application/json" },
     });
 
-    console.log("Response:", response);
+    console.log("User registered successfully:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error signing up:", error.response?.data || error.message);
