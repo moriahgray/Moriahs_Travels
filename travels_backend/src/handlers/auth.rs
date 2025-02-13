@@ -12,7 +12,7 @@ use log::{info, error};
 
 #[derive(Deserialize, Serialize, Debug)] 
 pub struct RegisterUser {
-    pub first_name: String, // first_name will be the user_id now
+    pub first_name: String,
     pub last_name: String,
     pub email: String,
     pub password: String,
@@ -29,14 +29,9 @@ pub async fn register_user(
     pool: web::Data<DbPool>,
     item: web::Json<RegisterUser>,
 ) -> impl Responder {
-    use log::{info, error};
-
     info!("Received registration request: {:?}", item);
 
     let mut conn = pool.get().expect("Failed to get DB connection");
-
-    // Use first_name as user_id
-    let generated_user_id = item.first_name.clone();
 
     // Generate UUID for uuid_user_id
     let generated_uuid_user_id = Uuid::new_v4().to_string();
@@ -49,15 +44,14 @@ pub async fn register_user(
         .to_string();
 
     let new_user = NewUser {
-        user_id: generated_user_id,
-        uuid_user_id: Some(generated_uuid_user_id),
+        user_id: item.first_name.clone(),
+        uuid_user_id: Some(generated_uuid_user_id.clone()), // Clone so we can use it later
         first_name: item.first_name.clone(),
         last_name: item.last_name.clone(),
         email: item.email.clone(),
         password: hashed_password,
     };
 
-    // Log user information before inserting into the database
     info!("Inserting new user into the database: {:?}", new_user);
 
     match diesel::insert_into(users)
@@ -68,7 +62,10 @@ pub async fn register_user(
             info!("User created successfully.");
             HttpResponse::Created()
                 .content_type("application/json")
-                .json(serde_json::json!({ "message": "User created successfully" }))
+                .json(serde_json::json!({ 
+                    "message": "User created successfully", 
+                    "uuid": generated_uuid_user_id // Now safely available
+                }))
         }
         Err(e) => {
             error!("Error inserting new user: {:?}", e);
@@ -82,13 +79,10 @@ pub async fn login_user(
     pool: web::Data<DbPool>,
     item: web::Json<LoginUser>,
 ) -> impl Responder {
-    use log::{info, error};
-
     info!("Received login request: {:?}", item);
 
     let mut conn = pool.get().expect("Failed to get DB connection");
 
-    // Fetch user based on the email
     let user: User = match users
         .filter(email.eq(&item.email))
         .first(&mut conn) 
@@ -100,7 +94,6 @@ pub async fn login_user(
         }
     };
 
-    // Log user password verification attempt
     info!("Verifying password for user: {}", item.email);
 
     let password_matches = if let Some(stored_password) = &user.password {
@@ -116,8 +109,11 @@ pub async fn login_user(
         return HttpResponse::Unauthorized().body("Invalid credentials");
     }
 
-    // Generate JWT token
-    let token: String = match generate_jwt(&user.uuid_user_id.unwrap_or_default()) {
+    // Clone `uuid_user_id` before using it multiple times
+    let user_uuid = user.uuid_user_id.clone().unwrap_or_default();
+
+    // Generate JWT token using UUID
+    let token: String = match generate_jwt(&user_uuid) {
         Ok(token) => {
             info!("Generated JWT token successfully.");
             token
@@ -128,12 +124,13 @@ pub async fn login_user(
         }
     };
 
-    // Log the token (consider masking sensitive parts in production)
-    let masked_token = &token[0..6]; // Mask the token for logs
-    info!("Returning JWT token: {}", masked_token);
+    info!("Returning JWT token");
 
-    // Return the token as a JSON object
-    HttpResponse::Ok().json(serde_json::json!({ "token": token }))
+    HttpResponse::Ok().json(serde_json::json!({
+        "message": "Login successful",
+        "token": token,
+        "uuid_user_id": user_uuid // UUID safely available here
+    }))
 }
 
 #[derive(Serialize)]
@@ -143,8 +140,6 @@ pub struct VerifyAuthResponse {
 
 #[get("/auth/verify")]
 pub async fn verify_auth(auth_header: Option<String>) -> impl Responder {
-    use log::{info, error};
-
     let token = auth_header.unwrap_or_default();
 
     if token.is_empty() {
@@ -154,7 +149,7 @@ pub async fn verify_auth(auth_header: Option<String>) -> impl Responder {
         });
     }
 
-    info!("Received token for verification: {}", token);
+    info!("Received token for verification");
 
     match decode_jwt(&token) {
         Ok(_) => {
