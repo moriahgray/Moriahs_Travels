@@ -254,3 +254,18 @@ pub async fn delete_place(
         "message": "Place deleted successfully"
     })))
 }
+
+//Register all routes
+pub fn init_routes(cfg: &mut web::ServiceConfig) {
+    cfg.service(
+        web::resource("/places")
+            .route(web::post().to(add_place))
+            .route(web::get().to(get_places)),
+    )
+    .service(
+        web::resource("/places/{id}")
+            .route(web::get().to(get_place_by_id)) 
+            .route(web::put().to(update_place))
+            .route(web::delete().to(delete_place)),
+    );
+}
