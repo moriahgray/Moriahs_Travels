@@ -5,20 +5,25 @@ const API_URL = "http://192.168.1.20:8000";
 
 const getHeaders = async () => {
   const token = await getFromStorage("token");
+
+  if (!token) {
+    console.warn("No token found. User might not be authenticated.");
+  }
+
   return {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 };
 
-// Fetch places based on category.
+// Fetch places based on category
 export const getPlaces = async (category) => {
   try {
     const headers = await getHeaders();
     console.log(`Fetching places with category: ${category}`);
 
     const response = await axios.get(`${API_URL}/places?category=${encodeURIComponent(category)}`, {
-      headers: headers,
+      headers,
     });
 
     return response.data;
@@ -28,7 +33,7 @@ export const getPlaces = async (category) => {
   }
 };
 
-// Fetch a single place by ID.
+// Fetch a single place by ID
 export const getPlaceDetails = async (placeId) => {
   try {
     const headers = await getHeaders();
@@ -40,17 +45,16 @@ export const getPlaceDetails = async (placeId) => {
   }
 };
 
-// ✅ Add place (No `user_id`)
+// ✅ Add place (No `user_id` or `uuid` in frontend)
 export const addPlace = async (placeData) => {
   try {
     const headers = await getHeaders();
     
-    // Convert "imageUri" to "image_uri" for the backend
     const formattedData = {
       ...placeData,
-      image_uri: placeData.imageUri,
+      image_uri: placeData.imageUri, // Rename for backend compatibility
     };
-    delete formattedData.imageUri; 
+    delete formattedData.imageUri;
 
     console.log("Final place data sent to backend:", JSON.stringify(formattedData, null, 2));
 
@@ -63,15 +67,14 @@ export const addPlace = async (placeData) => {
   }
 };
 
-// ✅ Update place (No `user_id`)
+// ✅ Update place (No `user_id` or `uuid` in frontend)
 export const updatePlace = async (placeId, updatedData) => {
   try {
     const headers = await getHeaders();
     
-    // Rename "imageUri" to "image_uri" to match backend expectations
     const formattedData = {
       ...updatedData,
-      image_uri: updatedData.imageUri,
+      image_uri: updatedData.imageUri, // Rename for backend compatibility
     };
     delete formattedData.imageUri;
 
@@ -86,7 +89,7 @@ export const updatePlace = async (placeId, updatedData) => {
   }
 };
 
-// ✅ Delete a place by ID.
+// ✅ Delete a place by ID
 export const deletePlace = async (placeId) => {
   try {
     const headers = await getHeaders();
@@ -98,12 +101,13 @@ export const deletePlace = async (placeId) => {
   }
 };
 
-// Log in a user.
+// Log in a user
 export const login = async (credentials) => {
   try {
     const response = await axios.post(`${API_URL}/auth/login`, credentials, {
       headers: { "Content-Type": "application/json" },
     });
+
     return response.data;
   } catch (error) {
     console.error("Error logging in:", error.response?.data || error.message);
@@ -111,13 +115,14 @@ export const login = async (credentials) => {
   }
 };
 
-// Sign up a new user.
+// Sign up a new user
 export const signup = async (userData) => {
   try {
     console.log("Signing up with data:", userData);
     const response = await axios.post(`${API_URL}/auth/register`, userData, {
       headers: { "Content-Type": "application/json" },
     });
+
     console.log("Response:", response);
     return response.data;
   } catch (error) {
