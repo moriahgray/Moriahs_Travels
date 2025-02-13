@@ -1,9 +1,10 @@
-use actix_web::{web, HttpResponse};
+use actix_web::{web, HttpResponse, HttpRequest};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use crate::models::{Place, NewPlace};
 use crate::schema::places;
 use crate::utils::db::DbPool;
+use crate::utils::jwt::decode_jwt;
 use bigdecimal::BigDecimal;
 use diesel::query_builder::AsChangeset;
 
@@ -12,7 +13,6 @@ pub struct QueryParams {
     pub category: Option<String>,
 }
 
-// Response struct for returning place data
 #[derive(Serialize)]
 pub struct PlaceResponse {
     pub id: i32,
@@ -30,7 +30,7 @@ pub struct PlaceResponse {
     pub created_at: Option<String>,
 }
 
-// Fetch all places from the database (with optional category filter)
+// Fetch all places
 pub async fn get_places(
     pool: web::Data<DbPool>,
     query: web::Query<QueryParams>,
@@ -40,8 +40,6 @@ pub async fn get_places(
     })?;
 
     let category_filter = query.category.clone().unwrap_or_else(|| "".to_string());
-
-    println!("Fetching places with category: {:?}", category_filter);
 
     let results = if !category_filter.is_empty() {
         places::table
@@ -54,29 +52,26 @@ pub async fn get_places(
             .map_err(|_| actix_web::error::ErrorInternalServerError("Failed to fetch places"))?
     };
 
-    let places_response: Vec<PlaceResponse> = results
-        .into_iter()
-        .map(|place| PlaceResponse {
-            id: place.id,
-            user_id: place.user_id,
-            title: place.title,
-            description: place.description,
-            latitude: place.latitude,
-            longitude: place.longitude,
-            plans: place.plans,
-            category: place.category,
-            hotels: place.hotels,
-            restaurants: place.restaurants,
-            image_uri: place.image_uri,
-            address: place.address,
-            created_at: place.created_at.map(|dt| dt.to_string()),
-        })
-        .collect();
+    let places_response: Vec<PlaceResponse> = results.into_iter().map(|place| PlaceResponse {
+        id: place.id,
+        user_id: place.user_id,
+        title: place.title,
+        description: place.description,
+        latitude: place.latitude,
+        longitude: place.longitude,
+        plans: place.plans,
+        category: place.category,
+        hotels: place.hotels,
+        restaurants: place.restaurants,
+        image_uri: place.image_uri,
+        address: place.address,
+        created_at: place.created_at.map(|dt| dt.to_string()),
+    }).collect();
 
     Ok(HttpResponse::Ok().json(places_response))
 }
 
-// ✅ NEW: Fetch a single place by ID
+// Fetch a single place by ID
 pub async fn get_place_by_id(
     pool: web::Data<DbPool>,
     place_id: web::Path<i32>,
@@ -84,8 +79,6 @@ pub async fn get_place_by_id(
     let mut conn = pool.get().map_err(|e| {
         actix_web::error::ErrorInternalServerError(format!("Database connection error: {}", e))
     })?;
-
-    println!("Fetching place with ID: {}", place_id);
 
     let place = places::table
         .filter(places::id.eq(*place_id))
@@ -119,19 +112,45 @@ pub async fn get_place_by_id(
     }
 }
 
-// Add a new place
+//Extract `user_id` from JWT Token in `add_place`
 pub async fn add_place(
     pool: web::Data<DbPool>,
     place_data: web::Json<NewPlace>,
+    req: HttpRequest,
 ) -> Result<HttpResponse, actix_web::Error> {
     let mut conn = pool.get().map_err(|e| {
         actix_web::error::ErrorInternalServerError(format!("Database connection error: {}", e))
     })?;
 
-    println!("Adding place: {:?}", place_data);
+    // Extract JWT token and decode `user_id`
+    let token = req
+        .headers()
+        .get("Authorization")
+        .and_then(|value| value.to_str().ok())
+        .and_then(|auth| auth.strip_prefix("Bearer "))
+        .unwrap_or_default()
+        .to_string();
+
+    if token.is_empty() {
+        return Ok(HttpResponse::Unauthorized().json(serde_json::json!({
+            "error": "Missing or invalid token"
+        })));
+    }
+
+    let user_id = match decode_jwt(&token) {
+        Ok(claims) => claims.claims.sub,
+        Err(_) => {
+            return Ok(HttpResponse::Unauthorized().json(serde_json::json!({
+                "error": "Invalid token"
+            })));
+        }
+    };
+
+    let mut new_place = place_data.into_inner();
+    new_place.user_id = user_id;
 
     diesel::insert_into(places::table)
-        .values(&place_data.into_inner())
+        .values(&new_place)
         .execute(&mut conn)
         .map_err(|err| {
             actix_web::error::ErrorInternalServerError(format!("Failed to insert place: {}", err))
@@ -209,7 +228,8 @@ pub async fn update_place(
         "message": "Place updated successfully"
     })))
 }
-// ✅ Function to Delete a Place
+
+// Delete a place
 pub async fn delete_place(
     pool: web::Data<DbPool>,
     place_id: web::Path<i32>,
@@ -217,8 +237,6 @@ pub async fn delete_place(
     let mut conn = pool.get().map_err(|e| {
         actix_web::error::ErrorInternalServerError(format!("Database connection error: {}", e))
     })?;
-
-    println!("Deleting place ID: {}", place_id);
 
     let deleted_rows = diesel::delete(places::table.filter(places::id.eq(*place_id)))
         .execute(&mut conn)
@@ -235,19 +253,4 @@ pub async fn delete_place(
     Ok(HttpResponse::Ok().json(serde_json::json!({
         "message": "Place deleted successfully"
     })))
-}
-
-//Register all routes
-pub fn init_routes(cfg: &mut web::ServiceConfig) {
-    cfg.service(
-        web::resource("/places")
-            .route(web::post().to(add_place))
-            .route(web::get().to(get_places)),
-    )
-    .service(
-        web::resource("/places/{id}")
-            .route(web::get().to(get_place_by_id)) 
-            .route(web::put().to(update_place))
-            .route(web::delete().to(delete_place)),
-    );
 }
