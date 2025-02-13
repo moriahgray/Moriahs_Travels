@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, Image } from "react-native";
 import { addPlace } from "../../utils/api";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as ImagePicker from "expo-image-picker";
 
 export default function AddPlaceWantScreen({ navigation }) {
   const [name, setName] = useState("");
@@ -12,6 +12,18 @@ export default function AddPlaceWantScreen({ navigation }) {
   const [restaurants, setRestaurants] = useState("");
   const [imageUri, setImageUri] = useState(null);
 
+  const handlePickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setImageUri(result.assets[0].uri);
+    }
+  };
+
   const handleAddPlace = async () => {
     if (!name || !address || !hotels || !restaurants || !plans) {
       Alert.alert("Error", "All fields are required.");
@@ -19,13 +31,6 @@ export default function AddPlaceWantScreen({ navigation }) {
     }
 
     try {
-      const user_id = await AsyncStorage.getItem("user_id");
-
-      if (!user_id) {
-        Alert.alert("Error", "User not authenticated.");
-        return;
-      }
-
       await addPlace({
         title: name,
         description,
@@ -33,9 +38,8 @@ export default function AddPlaceWantScreen({ navigation }) {
         plans,
         hotels,
         restaurants,
-        imageUri,
+        image_uri: imageUri,
         category: "wantToTravel",
-        user_id,
       });
 
       Alert.alert("Success", "Place added successfully.");
@@ -73,6 +77,11 @@ export default function AddPlaceWantScreen({ navigation }) {
       <Text style={styles.label}>Restaurants</Text>
       <TextInput style={styles.input} value={restaurants} onChangeText={setRestaurants} />
 
+      {imageUri && <Image source={{ uri: imageUri }} style={styles.image} />}
+      <TouchableOpacity style={styles.imageButton} onPress={handlePickImage}>
+        <Text style={styles.imageButtonText}>{imageUri ? "Change Image" : "Pick an Image"}</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.button} onPress={handleAddPlace}>
         <Text style={styles.buttonText}>Add Place</Text>
       </TouchableOpacity>
@@ -84,6 +93,9 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
   label: { fontSize: 16, fontWeight: "bold", marginBottom: 5 },
   input: { borderWidth: 1, borderColor: "#ccc", padding: 10, borderRadius: 5, marginBottom: 15 },
+  image: { width: "100%", height: 200, borderRadius: 10, marginBottom: 10 },
+  imageButton: { backgroundColor: "#FFA500", padding: 10, borderRadius: 5, alignItems: "center", marginBottom: 10 },
+  imageButtonText: { color: "#FFF", fontSize: 16 },
   button: { backgroundColor: "#007BFF", padding: 15, borderRadius: 5, alignItems: "center" },
   buttonText: { color: "#FFF", fontSize: 16 },
 });

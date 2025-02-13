@@ -45,16 +45,31 @@ pub struct Place {
     pub created_at: Option<NaiveDateTime>,
 }
 
-#[derive(Insertable, Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Insertable, Serialize, Debug)]
+#[diesel(table_name = places)]
+pub struct NewPlaceRequest {
+    pub title: String,
+    pub description: Option<String>,
+    pub latitude: Option<BigDecimal>,
+    pub longitude: Option<BigDecimal>,
+    pub plans: Option<String>,
+    pub category: String,
+    pub hotels: Option<String>,
+    pub restaurants: Option<String>,
+    pub image_uri: Option<String>,
+    pub address: Option<String>,
+}
+
+#[derive(Insertable, Debug)]
 #[diesel(table_name = places)]
 pub struct NewPlace {
     pub user_id: String,
     pub title: String,
     pub description: Option<String>,
-    pub latitude: BigDecimal,
-    pub longitude: BigDecimal,
+    pub latitude: Option<BigDecimal>,
+    pub longitude: Option<BigDecimal>,
     pub plans: Option<String>,
-    pub category: Option<String>,
+    pub category: String,
     pub hotels: Option<String>,
     pub restaurants: Option<String>,
     pub image_uri: Option<String>,

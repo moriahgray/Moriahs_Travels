@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, Image } from "react-native";
 import { addPlace } from "../../utils/api";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 
 export default function AddPlaceTraveledScreen({ navigation }) {
@@ -32,13 +31,6 @@ export default function AddPlaceTraveledScreen({ navigation }) {
     }
 
     try {
-      const user_id = await AsyncStorage.getItem("user_id");
-
-      if (!user_id) {
-        Alert.alert("Error", "User not authenticated.");
-        return;
-      }
-
       await addPlace({
         title: name,
         description,
@@ -48,7 +40,6 @@ export default function AddPlaceTraveledScreen({ navigation }) {
         restaurants,
         image_uri: imageUri,
         category: "traveled",
-        user_id,
       });
 
       Alert.alert("Success", "Place added successfully.");

@@ -40,6 +40,7 @@ export const getPlaceDetails = async (placeId) => {
   }
 };
 
+// ✅ Add place (No `user_id`)
 export const addPlace = async (placeData) => {
   try {
     const headers = await getHeaders();
@@ -62,7 +63,7 @@ export const addPlace = async (placeData) => {
   }
 };
 
-
+// ✅ Update place (No `user_id`)
 export const updatePlace = async (placeId, updatedData) => {
   try {
     const headers = await getHeaders();
@@ -85,7 +86,7 @@ export const updatePlace = async (placeId, updatedData) => {
   }
 };
 
-// Delete a place by ID.
+// ✅ Delete a place by ID.
 export const deletePlace = async (placeId) => {
   try {
     const headers = await getHeaders();

@@ -1,12 +1,13 @@
 use actix_web::{web, HttpResponse, HttpRequest};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
-use crate::models::{Place, NewPlace};
+use crate::models::{Place, NewPlaceRequest};
 use crate::schema::places;
 use crate::utils::db::DbPool;
 use crate::utils::jwt::decode_jwt;
 use bigdecimal::BigDecimal;
 use diesel::query_builder::AsChangeset;
+use crate::models::NewPlace;
 
 #[derive(Deserialize)]
 pub struct QueryParams {
@@ -112,17 +113,17 @@ pub async fn get_place_by_id(
     }
 }
 
-//Extract `user_id` from JWT Token in `add_place`
+//Updated `add_place` function
 pub async fn add_place(
     pool: web::Data<DbPool>,
-    place_data: web::Json<NewPlace>,
+    place_data: web::Json<NewPlaceRequest>, 
     req: HttpRequest,
 ) -> Result<HttpResponse, actix_web::Error> {
     let mut conn = pool.get().map_err(|e| {
         actix_web::error::ErrorInternalServerError(format!("Database connection error: {}", e))
     })?;
 
-    // Extract JWT token and decode `user_id`
+    //`user_id` from the JWT token
     let token = req
         .headers()
         .get("Authorization")
@@ -138,7 +139,7 @@ pub async fn add_place(
     }
 
     let user_id = match decode_jwt(&token) {
-        Ok(claims) => claims.claims.sub,
+        Ok(claims) => claims.claims.sub, // Extract `user_id`
         Err(_) => {
             return Ok(HttpResponse::Unauthorized().json(serde_json::json!({
                 "error": "Invalid token"
@@ -146,9 +147,22 @@ pub async fn add_place(
         }
     };
 
-    let mut new_place = place_data.into_inner();
-    new_place.user_id = user_id;
+    //Create new place and assign `user_id`
+    let new_place = NewPlace {
+        user_id, 
+        title: place_data.title.clone(),
+        description: place_data.description.clone(),
+        latitude: place_data.latitude.clone(),
+        longitude: place_data.longitude.clone(),
+        plans: place_data.plans.clone(),
+        category: place_data.category.clone(),
+        hotels: place_data.hotels.clone(),
+        restaurants: place_data.restaurants.clone(),
+        image_uri: place_data.image_uri.clone(),
+        address: place_data.address.clone(),
+    };
 
+    //Insert into database
     diesel::insert_into(places::table)
         .values(&new_place)
         .execute(&mut conn)
@@ -161,7 +175,7 @@ pub async fn add_place(
     })))
 }
 
-// ✅ Define UpdatePlaceRequest Struct
+//UpdatePlaceRequest Struct
 #[derive(Debug, Deserialize)]
 pub struct UpdatePlaceRequest {
     pub title: Option<String>,
@@ -176,7 +190,7 @@ pub struct UpdatePlaceRequest {
     pub address: Option<String>,
 }
 
-// ✅ Define PlaceUpdate Struct for Diesel
+//PlaceUpdate Struct
 #[derive(AsChangeset)]
 #[diesel(table_name = places)] 
 struct PlaceUpdate<'a> {
@@ -192,7 +206,7 @@ struct PlaceUpdate<'a> {
     address: Option<&'a str>,
 }
 
-// ✅ Updated: Update a place
+//Update a place
 pub async fn update_place(
     pool: web::Data<DbPool>,
     place_id: web::Path<i32>,
