@@ -113,7 +113,6 @@ pub async fn get_place_by_id(
     }
 }
 
-//Updated `add_place` function
 pub async fn add_place(
     pool: web::Data<DbPool>,
     place_data: web::Json<NewPlaceRequest>, 
@@ -123,7 +122,6 @@ pub async fn add_place(
         actix_web::error::ErrorInternalServerError(format!("Database connection error: {}", e))
     })?;
 
-    //`user_id` from the JWT token
     let token = req
         .headers()
         .get("Authorization")
@@ -138,8 +136,8 @@ pub async fn add_place(
         })));
     }
 
-    let user_id = match decode_jwt(&token) {
-        Ok(claims) => claims.claims.sub, // Extract `user_id`
+    let claims = match decode_jwt(&token) {
+        Ok(claims) => claims.claims,
         Err(_) => {
             return Ok(HttpResponse::Unauthorized().json(serde_json::json!({
                 "error": "Invalid token"
@@ -147,9 +145,8 @@ pub async fn add_place(
         }
     };
 
-    //Create new place and assign `user_id`
     let new_place = NewPlace {
-        user_id, 
+        user_id: claims.first_name.clone(), 
         title: place_data.title.clone(),
         description: place_data.description.clone(),
         latitude: place_data.latitude.clone(),
@@ -162,7 +159,6 @@ pub async fn add_place(
         address: place_data.address.clone(),
     };
 
-    //Insert into database
     diesel::insert_into(places::table)
         .values(&new_place)
         .execute(&mut conn)
@@ -269,7 +265,7 @@ pub async fn delete_place(
     })))
 }
 
-//Register all routes
+// Register all routes
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::resource("/places")

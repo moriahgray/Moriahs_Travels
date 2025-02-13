@@ -1,17 +1,18 @@
-use jsonwebtoken::{decode, DecodingKey, Validation, TokenData};
+use jsonwebtoken::{decode, DecodingKey, Validation, TokenData, encode, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
 use std::env;
 use chrono::{Utc, Duration};
 use jsonwebtoken::errors::Error as JwtError;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Claims {
-    pub sub: String,  // User ID (private field)
-    pub exp: usize,   // Expiration time
+    pub sub: String,
+    pub first_name: String,
+    pub exp: usize,
 }
 
-// Generates a JWT token for a given user ID
-pub fn generate_jwt(user_id: &str) -> Result<String, JwtError> {
+// Generates a JWT token for a given user ID **and first name**
+pub fn generate_jwt(user_id: &str, first_name: &str) -> Result<String, JwtError> {
     let expiration = Utc::now()
         .checked_add_signed(Duration::hours(24))
         .expect("valid timestamp")
@@ -19,18 +20,23 @@ pub fn generate_jwt(user_id: &str) -> Result<String, JwtError> {
 
     let claims = Claims {
         sub: user_id.to_owned(),
+        first_name: first_name.to_owned(),
         exp: expiration,
     };
 
     let secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
-    jsonwebtoken::encode(&jsonwebtoken::Header::default(), &claims, &jsonwebtoken::EncodingKey::from_secret(secret.as_ref()))
+
+    encode(
+        &Header::default(),
+        &claims,
+        &EncodingKey::from_secret(secret.as_ref()),
+    )
 }
 
 // Decodes a JWT token and returns the claims
 pub fn decode_jwt(token: &str) -> Result<TokenData<Claims>, JwtError> {
     let secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
 
-    // Validation is needed to ensure the token is valid
     let validation = Validation::default();
     decode::<Claims>(
         token,

@@ -1,16 +1,16 @@
-use actix_web::{web, post, get, HttpResponse, Responder};
-use diesel::prelude::*;
-use crate::models::{User, NewUser};
+use crate::models::{NewUser, User};
 use crate::schema::users::dsl::*;
 use crate::utils::db::DbPool;
-use crate::utils::jwt::{generate_jwt, decode_jwt};
+use crate::utils::jwt::{decode_jwt, generate_jwt};
+use actix_web::{get, post, web, HttpResponse, Responder};
+use argon2::password_hash::{PasswordHasher, SaltString};
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
-use argon2::password_hash::{SaltString, PasswordHasher};
-use serde::{Serialize, Deserialize};
+use diesel::prelude::*;
+use log::{error, info};
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use log::{info, error};
 
-#[derive(Deserialize, Serialize, Debug)] 
+#[derive(Deserialize, Serialize, Debug)]
 pub struct RegisterUser {
     pub first_name: String,
     pub last_name: String,
@@ -45,7 +45,7 @@ pub async fn register_user(
 
     let new_user = NewUser {
         user_id: item.first_name.clone(),
-        uuid_user_id: Some(generated_uuid_user_id.clone()), // Clone so we can use it later
+        uuid_user_id: Some(generated_uuid_user_id.clone()),
         first_name: item.first_name.clone(),
         last_name: item.last_name.clone(),
         email: item.email.clone(),
@@ -56,14 +56,14 @@ pub async fn register_user(
 
     match diesel::insert_into(users)
         .values(&new_user)
-        .execute(&mut conn) 
+        .execute(&mut conn)
     {
         Ok(_) => {
             info!("User created successfully.");
             HttpResponse::Created()
                 .content_type("application/json")
-                .json(serde_json::json!({ 
-                    "message": "User created successfully", 
+                .json(serde_json::json!({
+                    "message": "User created successfully",
                     "uuid": generated_uuid_user_id // Now safely available
                 }))
         }
@@ -75,18 +75,12 @@ pub async fn register_user(
 }
 
 #[post("/auth/login")]
-pub async fn login_user(
-    pool: web::Data<DbPool>,
-    item: web::Json<LoginUser>,
-) -> impl Responder {
+pub async fn login_user(pool: web::Data<DbPool>, item: web::Json<LoginUser>) -> impl Responder {
     info!("Received login request: {:?}", item);
 
     let mut conn = pool.get().expect("Failed to get DB connection");
 
-    let user: User = match users
-        .filter(email.eq(&item.email))
-        .first(&mut conn) 
-    {
+    let user: User = match users.filter(email.eq(&item.email)).first(&mut conn) {
         Ok(user) => user,
         Err(e) => {
             error!("Error fetching user for email {}: {:?}", item.email, e);
@@ -98,7 +92,10 @@ pub async fn login_user(
 
     let password_matches = if let Some(stored_password) = &user.password {
         Argon2::default()
-            .verify_password(item.password.as_bytes(), &PasswordHash::new(stored_password).unwrap())
+            .verify_password(
+                item.password.as_bytes(),
+                &PasswordHash::new(stored_password).unwrap(),
+            )
             .is_ok()
     } else {
         false
@@ -110,17 +107,14 @@ pub async fn login_user(
     }
 
     // Clone `uuid_user_id` before using it multiple times
-    let user_uuid = user.uuid_user_id.clone().unwrap_or_default();
-
-    // Generate JWT token using UUID
-    let token: String = match generate_jwt(&user_uuid) {
-        Ok(token) => {
-            info!("Generated JWT token successfully.");
-            token
-        }
-        Err(_) => {
-            error!("Error generating JWT token.");
-            return HttpResponse::InternalServerError().body("Error generating JWT");
+    let token: String = match generate_jwt(
+        &user.user_id,
+        user.first_name.as_deref().unwrap_or("Unknown"),
+    ) {
+        Ok(token) => token,
+        Err(e) => {
+            eprintln!("Failed to generate JWT: {}", e);
+            return HttpResponse::InternalServerError().body("Failed to generate token");
         }
     };
 
@@ -129,7 +123,8 @@ pub async fn login_user(
     HttpResponse::Ok().json(serde_json::json!({
         "message": "Login successful",
         "token": token,
-        "uuid_user_id": user_uuid // UUID safely available here
+    "uuid_user_id": user.user_id
+
     }))
 }
 
