@@ -1,6 +1,9 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, Image } from "react-native";
+import { 
+  View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, Image 
+} from "react-native";
 import { addPlace } from "../../utils/api";
+import { getCoordinatesFromAddress } from "../../utils/location";
 import * as ImagePicker from "expo-image-picker";
 
 export default function AddPlaceTraveledScreen({ navigation }) {
@@ -31,10 +34,14 @@ export default function AddPlaceTraveledScreen({ navigation }) {
     }
 
     try {
+      const { latitude, longitude } = await getCoordinatesFromAddress(address);
+
       await addPlace({
         title: name,
         description,
         address,
+        latitude,
+        longitude,
         plans,
         hotels,
         restaurants,
