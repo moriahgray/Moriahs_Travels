@@ -1,1 +1,0 @@
-fn(actix_web::web::Data<Pool<ConnectionManager<MysqlConnection>>>, actix_web::web::Json<{type error}>, HttpRequest) -> impl std::future::Future<Output = Result<HttpResponse, actix_web::Error>> {add_place}

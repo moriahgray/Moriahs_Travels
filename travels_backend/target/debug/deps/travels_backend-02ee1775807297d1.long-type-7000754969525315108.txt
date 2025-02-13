@@ -1,1 +1,0 @@
-expression::grouped::Grouped<expression::operators::Eq<schema::places::columns::category, expression::bound::Bound<diesel::sql_types::Nullable<diesel::sql_types::Text>, &std::string::String>>>
