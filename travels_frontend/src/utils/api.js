@@ -1,10 +1,10 @@
-import { getFromStorage } from "./storage";
+import * as storage from "./storage";
 import axios from "axios"; 
 
 const API_URL = "http://192.168.1.20:8000";
 
 const getHeaders = async () => {
-  const token = await getFromStorage("token");
+  const token = await storage.getFromStorage("token");
 
   if (!token) {
     console.warn("Authentication token not found. User may not be logged in.");
@@ -22,8 +22,6 @@ const getHeaders = async () => {
 export const getPlaces = async (category) => {
   try {
     const headers = await getHeaders();
-    console.log(`Fetching places with category: ${category}`);
-
     const response = await axios.get(`${API_URL}/places?category=${encodeURIComponent(category)}`, {
       headers,
     });
@@ -112,12 +110,22 @@ export const login = async (credentials) => {
       headers: { "Content-Type": "application/json" },
     });
 
+    const { token } = response.data;
+
+    if (token) {
+      console.log("Login successful, saving token:", token);
+      await storage.saveToStorage("token", token);
+    } else {
+      console.error("Login response did not contain a token.");
+    }
+
     return response.data;
   } catch (error) {
     console.error("Error logging in:", error.response?.data || error.message);
     throw error;
   }
 };
+
 
 // Sign up a new user
 export const signup = async (userData) => {

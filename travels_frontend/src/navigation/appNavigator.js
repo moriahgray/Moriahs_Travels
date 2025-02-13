@@ -1,4 +1,3 @@
-// appNavigator.js
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import { TouchableOpacity, Text } from "react-native";
@@ -52,8 +51,7 @@ export default function AppNavigator({ isAuthenticated, setIsAuthenticated }) {
         <>
           <Stack.Screen name="MainMenuScreen">
             {(props) => {
-              console.log("Navigating to MainMenuScreen");
-              return <MainMenuScreen {...props} />;
+              return <MainMenuScreen {...props} setIsAuthenticated={setIsAuthenticated} />;
             }}
           </Stack.Screen>
           <Stack.Screen name="MapScreen">{(props) => <MapScreen {...props} />}</Stack.Screen>

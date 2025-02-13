@@ -27,7 +27,6 @@ export default function TraveledTo({ navigation }) {
   //Force refresh when returning from Add or Place Details screens
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
-      console.log("🔄 Reloading places for TraveledTo after returning...");
       loadPlaces();
     });
 

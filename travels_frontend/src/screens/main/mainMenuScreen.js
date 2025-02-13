@@ -2,6 +2,7 @@
 import React, { useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { removeToken } from "../../utils/storage";
+import WelcomeScreen from "../auth/welcomeScreen";
 
 export default function MainMenuScreen({ navigation, setIsAuthenticated }) {
   useEffect(() => {
@@ -22,10 +23,6 @@ export default function MainMenuScreen({ navigation, setIsAuthenticated }) {
     try {
       await removeToken();
       setIsAuthenticated(false);
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "Welcome" }],
-      });
       console.log("User logged out successfully.");
     } catch (error) {
       console.error("Error logging out:", error);
