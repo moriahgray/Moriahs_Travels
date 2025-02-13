@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { View, TextInput, Button, Alert, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Image, TouchableOpacity, Text } from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import * as FileSystem from "expo-file-system";
+import React, { useState } from "react";
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, Image } from "react-native";
 import { addPlace } from "../../utils/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as ImagePicker from "expo-image-picker";
 
 export default function AddPlaceTraveledScreen({ navigation }) {
   const [name, setName] = useState("");
@@ -13,56 +13,15 @@ export default function AddPlaceTraveledScreen({ navigation }) {
   const [restaurants, setRestaurants] = useState("");
   const [imageUri, setImageUri] = useState(null);
 
-  useEffect(() => {
-    navigation.setOptions({
-      title: "Add Place (Traveled)",
-      headerBackTitle: "Back",
-      headerBackTitleVisible: false,
-      headerLeft: () => (
-        <TouchableOpacity onPress={() => navigation.goBack()} style={{ paddingLeft: 15 }}>
-          <Text style={{ color: "blue", fontSize: 17 }}>Back</Text>
-        </TouchableOpacity>
-      ),
-    });
-
-    (async () => {
-      if (Platform.OS !== "web") {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== "granted") {
-          Alert.alert("Permission Denied", "You need to allow access to photos.");
-        }
-      }
-    })();
-  }, [navigation]);
-
-  const handleChooseImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
+  const handlePickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4, 3],
       quality: 1,
     });
 
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      try {
-        // Original picked URI
-        const pickedUri = result.assets[0].uri;
-
-        // Create a filename
-        const fileName = pickedUri.split("/").pop() || `image_${Date.now()}.jpg`;
-        const localFolder = `${FileSystem.documentDirectory}myImages/`;
-        await FileSystem.makeDirectoryAsync(localFolder, { intermediates: true });
-        const newPath = `${localFolder}${fileName}`;
-
-        // Copy from the picked file to our app's local storage
-        await FileSystem.copyAsync({ from: pickedUri, to: newPath });
-
-        // Save that local path
-        setImageUri(newPath);
-      } catch (err) {
-        console.error("Error copying file:", err);
-        Alert.alert("Error", "Failed to save image locally.");
-      }
+    if (!result.canceled) {
+      setImageUri(result.assets[0].uri);
     }
   };
 
@@ -73,6 +32,13 @@ export default function AddPlaceTraveledScreen({ navigation }) {
     }
 
     try {
+      const user_id = await AsyncStorage.getItem("user_id");
+
+      if (!user_id) {
+        Alert.alert("Error", "User not authenticated.");
+        return;
+      }
+
       await addPlace({
         title: name,
         description,
@@ -80,11 +46,12 @@ export default function AddPlaceTraveledScreen({ navigation }) {
         plans,
         hotels,
         restaurants,
-        imageUri, // local path
+        image_uri: imageUri,
         category: "traveled",
+        user_id,
       });
 
-      Alert.alert("Success", "Place added successfully!");
+      Alert.alert("Success", "Place added successfully.");
       setName("");
       setDescription("");
       setAddress("");
@@ -92,6 +59,7 @@ export default function AddPlaceTraveledScreen({ navigation }) {
       setHotels("");
       setRestaurants("");
       setImageUri(null);
+      navigation.goBack();
     } catch (error) {
       console.error("Error adding place:", error);
       Alert.alert("Error", "Failed to add place.");
@@ -99,36 +67,44 @@ export default function AddPlaceTraveledScreen({ navigation }) {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.innerContainer}>
-          <TextInput placeholder="Name" style={styles.input} value={name} onChangeText={setName} />
-          <TextInput placeholder="Description" style={styles.input} value={description} onChangeText={setDescription} multiline />
-          <TextInput placeholder="Address" style={styles.input} value={address} onChangeText={setAddress} />
-          <TextInput placeholder="Plans" style={styles.input} value={plans} onChangeText={setPlans} multiline />
-          <TextInput placeholder="Hotels" style={styles.input} value={hotels} onChangeText={setHotels} />
-          <TextInput placeholder="Restaurants" style={styles.input} value={restaurants} onChangeText={setRestaurants} />
+    <View style={styles.container}>
+      <Text style={styles.label}>Name</Text>
+      <TextInput style={styles.input} value={name} onChangeText={setName} />
 
-          <TouchableOpacity style={styles.imagePicker} onPress={handleChooseImage}>
-            {imageUri ? (
-              <Image source={{ uri: imageUri }} style={styles.image} />
-            ) : (
-              <Button title="Choose Image" onPress={handleChooseImage} />
-            )}
-          </TouchableOpacity>
+      <Text style={styles.label}>Description</Text>
+      <TextInput style={styles.input} value={description} onChangeText={setDescription} multiline />
 
-          <Button title="Add Place" onPress={handleAddPlace} />
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      <Text style={styles.label}>Address</Text>
+      <TextInput style={styles.input} value={address} onChangeText={setAddress} />
+
+      <Text style={styles.label}>Plans</Text>
+      <TextInput style={styles.input} value={plans} onChangeText={setPlans} multiline />
+
+      <Text style={styles.label}>Hotels</Text>
+      <TextInput style={styles.input} value={hotels} onChangeText={setHotels} />
+
+      <Text style={styles.label}>Restaurants</Text>
+      <TextInput style={styles.input} value={restaurants} onChangeText={setRestaurants} />
+
+      {imageUri && <Image source={{ uri: imageUri }} style={styles.image} />}
+      <TouchableOpacity style={styles.imageButton} onPress={handlePickImage}>
+        <Text style={styles.imageButtonText}>{imageUri ? "Change Image" : "Pick an Image"}</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.button} onPress={handleAddPlace}>
+        <Text style={styles.buttonText}>Add Place</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  scrollContainer: { flexGrow: 1, padding: 20 },
-  innerContainer: { flexGrow: 1 },
-  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 5, padding: 10, marginBottom: 10, backgroundColor: "#f9f9f9" },
-  imagePicker: { alignItems: "center", justifyContent: "center", marginBottom: 20 },
-  image: { width: 200, height: 200, borderRadius: 10 },
+  container: { flex: 1, padding: 20 },
+  label: { fontSize: 16, fontWeight: "bold", marginBottom: 5 },
+  input: { borderWidth: 1, borderColor: "#ccc", padding: 10, borderRadius: 5, marginBottom: 15 },
+  image: { width: "100%", height: 200, borderRadius: 10, marginBottom: 10 },
+  imageButton: { backgroundColor: "#FFA500", padding: 10, borderRadius: 5, alignItems: "center", marginBottom: 10 },
+  imageButtonText: { color: "#FFF", fontSize: 16 },
+  button: { backgroundColor: "#007BFF", padding: 15, borderRadius: 5, alignItems: "center" },
+  buttonText: { color: "#FFF", fontSize: 16 },
 });
